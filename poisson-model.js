@@ -116,7 +116,8 @@
       probBtts: { sim: pBttsSim, nao: pBttsNao },
       pUnder: pUnder,
       confiancaDados: confiancaDados,
-      amostraCasa: fCasa.nCasa, amostraFora: fFora.nFora
+      amostraCasa: fCasa.nCasa, amostraFora: fFora.nFora,
+      forcaCasa: fCasa, forcaFora: fFora
     };
   }
 

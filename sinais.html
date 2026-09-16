@@ -1,0 +1,358 @@
+<title>Sinais — Raio-X do Mercado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .pick-card{padding:16px;display:flex;flex-direction:column;gap:8px;}
+  .pick-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+  .pick-teams{font-family:'Oswald',sans-serif;font-weight:600;font-size:15px;}
+  .pick-league{font-size:11.5px;color:var(--text-muted);}
+  .pick-market{display:flex;align-items:baseline;gap:10px;}
+  .pick-market .num{font-family:'Oswald',sans-serif;font-weight:700;font-size:28px;color:var(--accent-2);}
+  .pick-market .lbl{font-size:13px;font-weight:600;}
+  .pick-explain{font-size:12.5px;color:var(--text-muted);line-height:1.5;}
+  .pick-foot{font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+</style>
+
+<nav class="topnav">
+  <a href="index.html" class="topnav-brand">Raio-X ⚽ Mercado</a>
+  <div class="topnav-links">
+    <a href="index.html">Início</a>
+    <a href="analise.html">Análise</a>
+    <a href="classificacao.html">Classificação</a>
+    <a href="calendario.html">Próximos Jogos</a>
+    <a href="rankings.html">Rankings</a>
+    <a href="sinais.html" class="active">Sinais</a>
+    <a href="responsavel.html">Jogo Responsável</a>
+  </div>
+</nav>
+
+<div class="wrap wide">
+  <h1>Sinais</h1>
+  <p class="lede">Pra cada jogo, o motor testa os mercados com sinal validado por backtest e mostra o mais consistente — com a explicação de por quê.</p>
+  <div class="rg-banner">⚠️ <span>Isto é uma estimativa estatística sobre o histórico dos times, <strong>não uma garantia de resultado</strong>. Cobertura de calendário limitada às ligas principais (veja <a href="calendario.html">Próximos Jogos</a>). Leia as <a href="responsavel.html">diretrizes de jogo responsável</a> antes de apostar.</span></div>
+
+  <div class="seg" id="seg-modo" style="max-width:420px;">
+    <button type="button" data-val="dia" class="active">Jogos do dia</button>
+    <button type="button" data-val="multipla">Montar múltipla</button>
+  </div>
+
+  <div id="painel-dia">
+    <div class="field" style="max-width:320px;">
+      <label for="sel-data">Data</label>
+      <select id="sel-data"></select>
+    </div>
+    <div id="dia-wrap"><p class="status-line">carregando jogos…</p></div>
+  </div>
+
+  <div id="painel-multipla" style="display:none;">
+    <div class="card form-card" style="flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:16px;">
+      <div class="field" style="flex:1;min-width:160px;">
+        <label for="mult-data">Data</label>
+        <select id="mult-data"></select>
+      </div>
+      <div class="field" style="flex:1;min-width:200px;">
+        <label for="mult-mercado">Mercado</label>
+        <select id="mult-mercado">
+          <option value="auto">Qualquer um (o motor escolhe o melhor por jogo)</option>
+          <option value="over15">Só Over 1.5 gols</option>
+          <option value="over25">Só Over 2.5 gols (sinal fraco no backtest)</option>
+          <option value="over35">Só Over 3.5 gols</option>
+          <option value="btts">Só Ambas Marcam / BTTS (sinal fraco no backtest)</option>
+          <option value="vitoria">Só Vitória (mandante ou visitante, o que for favorito)</option>
+        </select>
+      </div>
+      <div class="field" style="flex:1;min-width:160px;">
+        <label for="mult-confianca">Confiança mínima</label>
+        <select id="mult-confianca">
+          <option value="0.55">55%</option>
+          <option value="0.60" selected>60%</option>
+          <option value="0.65">65%</option>
+          <option value="0.70">70%</option>
+          <option value="0.75">75%</option>
+        </select>
+      </div>
+      <div class="field" style="flex:1;min-width:140px;">
+        <label for="mult-n">Quantos jogos</label>
+        <select id="mult-n">
+          <option value="5">5</option>
+          <option value="10" selected>10</option>
+          <option value="15">15</option>
+          <option value="20">20</option>
+        </select>
+      </div>
+      <button class="btn-primary" id="btn-gerar" style="width:auto;padding-inline:24px;">Gerar múltipla →</button>
+    </div>
+    <div id="multipla-wrap"></div>
+  </div>
+
+  <footer>Fonte: histórico público de resultados do football-data.co.uk. Ferramenta de apoio à análise — não é recomendação de aposta. <a href="responsavel.html">Jogue com responsabilidade →</a></footer>
+</div>
+
+<script src="poisson-model.js"></script>
+<script>
+(function(){
+  var leagues = null, calibAll = null, fixtures = [];
+  var matchesCache = {};
+  var state = { modo:'dia' };
+
+  var CALIB_KEY = { over05:'over05', over15:'over15', over25:'over25', under25:'over25', under35:'over35', btts:'btts', vitoria:'mo1x2' };
+  var SEM_SINAL = { over25:true, under25:true, btts:true };
+  var MERCADO_LABEL = {
+    over05:'Over 0.5 gols', over15:'Over 1.5 gols', over25:'Over 2.5 gols', over35:'Over 3.5 gols',
+    under25:'Under 2.5 gols', under35:'Under 3.5 gols', btts:'Ambas marcam (BTTS)', vitoria:'Vitória'
+  };
+  var CORE_MARKETS = ['over15','over35','vitoria']; // só mercados com sinal validado E valor prático de aposta (over 0.5 fica de fora: acerto altíssimo mas odd quase 1.00, sem uso real)
+
+  var els = {
+    segModo: document.getElementById('seg-modo'),
+    painelDia: document.getElementById('painel-dia'),
+    painelMultipla: document.getElementById('painel-multipla'),
+    selData: document.getElementById('sel-data'),
+    diaWrap: document.getElementById('dia-wrap'),
+    multData: document.getElementById('mult-data'),
+    multMercado: document.getElementById('mult-mercado'),
+    multConfianca: document.getElementById('mult-confianca'),
+    multN: document.getElementById('mult-n'),
+    btnGerar: document.getElementById('btn-gerar'),
+    multiplaWrap: document.getElementById('multipla-wrap')
+  };
+
+  Promise.all([
+    fetch('data/leagues.json', {cache:'no-store'}).then(function(r){return r.json();}),
+    fetch('data/calibracao.json', {cache:'no-store'}).then(function(r){return r.json();}),
+    fetch('data/fixtures.json', {cache:'no-store'}).then(function(r){return r.json();})
+  ]).then(function(res){
+    leagues = res[0].leagues;
+    calibAll = res[1];
+    fixtures = res[2].fixtures;
+
+    var dates = [...new Set(fixtures.map(function(f){return f.d;}))].sort();
+    var dateOptHtml = dates.map(function(d){ return '<option value="'+d+'">'+fmtDate(d)+'</option>'; }).join('');
+    els.selData.innerHTML = dateOptHtml || '<option value="">Sem datas disponíveis</option>';
+    els.multData.innerHTML = dateOptHtml || '<option value="">Sem datas disponíveis</option>';
+
+    if(dates.length){ renderDia(); }
+    else { els.diaWrap.innerHTML = '<div class="card empty">Nenhum jogo futuro disponível na fonte agora.</div>'; }
+  });
+
+  els.selData.addEventListener('change', renderDia);
+  els.segModo.addEventListener('click', function(e){
+    var btn = e.target.closest('button'); if(!btn) return;
+    Array.prototype.forEach.call(els.segModo.children, function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    state.modo = btn.dataset.val;
+    els.painelDia.style.display = state.modo==='dia' ? '' : 'none';
+    els.painelMultipla.style.display = state.modo==='multipla' ? '' : 'none';
+  });
+  els.btnGerar.addEventListener('click', gerarMultipla);
+
+  function fmtDate(iso){
+    var p = iso.split('-');
+    var dias = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+    var dow = dias[new Date(iso+'T12:00:00Z').getUTCDay()];
+    return p[2]+'/'+p[1]+' ('+dow+')';
+  }
+
+  function getMatches(code){
+    if(matchesCache[code]) return matchesCache[code];
+    matchesCache[code] = fetch('data/matches/'+code+'.json', {cache:'no-store'}).then(function(r){return r.json();}).then(function(db){ return db.matches; });
+    return matchesCache[code];
+  }
+
+  function lookupCalibracao(code, mercadoKey, prob){
+    var calibKey = CALIB_KEY[mercadoKey];
+    var calib = calibAll[code];
+    if(!calib || !calibKey || !calib[calibKey]) return null;
+    var faixas = calib[calibKey].faixas;
+    var limites = [[0,0.55],[0.55,0.60],[0.60,0.65],[0.65,0.70],[0.70,0.80],[0.80,1.01]];
+    for(var j=0;j<limites.length;j++){
+      if(prob >= limites[j][0] && prob < limites[j][1]){
+        var faixa = faixas[j];
+        return faixa && faixa.n >= 15 ? faixa : null;
+      }
+    }
+    return null;
+  }
+
+  function probParaMercado(resultado, key){
+    if(key==='over05') return 1 - resultado.pUnder(0.5);
+    if(key==='over15') return 1 - resultado.pUnder(1.5);
+    if(key==='over25') return 1 - resultado.pUnder(2.5);
+    if(key==='over35') return 1 - resultado.pUnder(3.5);
+    if(key==='under25') return resultado.pUnder(2.5);
+    if(key==='under35') return resultado.pUnder(3.5);
+    if(key==='btts') return resultado.probBtts.sim;
+    if(key==='vitoria') return Math.max(resultado.prob1x2.H, resultado.prob1x2.A);
+    return null;
+  }
+
+  function explicacao(resultado, key, home, away, label){
+    var fc = resultado.forcaCasa, ff = resultado.forcaFora;
+    var frases = [];
+    var ehUnder = (label || '').indexOf('Under') === 0;
+    if(key==='over15' || key==='over35' || key==='btts'){
+      if(ehUnder){
+        if(fc.ataqueCasa < 0.9) frases.push(home+' ataca abaixo da média da liga jogando em casa');
+        if(ff.ataqueFora < 0.9) frases.push(away+' ataca abaixo da média jogando fora');
+        if(fc.defesaCasa < 0.9) frases.push(home+' costuma sofrer poucos gols em casa');
+        if(ff.defesaFora < 0.9) frases.push(away+' costuma sofrer poucos gols fora');
+      } else {
+        if(fc.ataqueCasa >= 1.1) frases.push(home+' ataca acima da média da liga jogando em casa');
+        if(ff.defesaFora >= 1.1) frases.push(away+' costuma sofrer gols acima da média jogando fora');
+        if(ff.ataqueFora >= 1.1) frases.push(away+' também ataca bem fora de casa');
+        if(fc.defesaCasa >= 1.1) frases.push(home+' tem sofrido gols acima da média em casa');
+      }
+    } else if(key==='vitoria'){
+      var favCasa = resultado.prob1x2.H >= resultado.prob1x2.A;
+      if(favCasa){
+        if(fc.ataqueCasa >= 1.1) frases.push(home+' ataca bem em casa');
+        if(ff.defesaFora >= 1.1) frases.push(away+' defende mal fora');
+        if(ff.ataqueFora < 0.9) frases.push(away+' ataca abaixo da média fora de casa');
+      } else {
+        if(ff.ataqueFora >= 1.1) frases.push(away+' ataca bem fora de casa');
+        if(fc.defesaCasa >= 1.1) frases.push(home+' defende mal em casa');
+      }
+    }
+    if(!frases.length) frases.push('Estimativa baseada na força ofensiva e defensiva histórica dos dois times.');
+    return frases.join('; ') + '.';
+  }
+
+  // Pro modo "automático": olha o lado (over ou under) que o modelo realmente favorece
+  // pra cada mercado, em vez de travar sempre no "over" mesmo quando under é o favorito.
+  function favoredCandidate(resultado, family, home, away){
+    if(family==='over15' || family==='over35'){
+      var th = family==='over15' ? 1.5 : 3.5;
+      var pOver = 1 - resultado.pUnder(th), pUnder = resultado.pUnder(th);
+      return pOver >= pUnder
+        ? { calibKey:family, label:'Over '+th+' gols', prob:pOver }
+        : { calibKey:family, label:'Under '+th+' gols', prob:pUnder };
+    }
+    if(family==='vitoria'){
+      var favCasa = resultado.prob1x2.H >= resultado.prob1x2.A;
+      return { calibKey:'vitoria', label: favCasa ? 'Vitória '+home : 'Vitória '+away, prob: Math.max(resultado.prob1x2.H, resultado.prob1x2.A) };
+    }
+    return null;
+  }
+
+  function melhorMercado(resultado, code, home, away){
+    var candidatos = [];
+    CORE_MARKETS.forEach(function(family){
+      var cand = favoredCandidate(resultado, family, home, away);
+      if(!cand) return;
+      var faixa = lookupCalibracao(code, cand.calibKey, cand.prob);
+      if(!faixa) return;
+      candidatos.push({ key:family, label:cand.label, prob:cand.prob, taxaReal:faixa.taxaAcerto, n:faixa.n });
+    });
+    candidatos.sort(function(a,b){ return b.taxaReal - a.taxaReal || b.prob - a.prob; });
+    return candidatos[0] || null;
+  }
+
+  function renderDia(){
+    var data = els.selData.value;
+    var jogos = fixtures.filter(function(f){ return f.d === data; });
+    if(!jogos.length){ els.diaWrap.innerHTML = '<div class="card empty">Sem jogos nessa data.</div>'; return; }
+    els.diaWrap.innerHTML = '<p class="status-line">calculando '+jogos.length+' jogos…</p>';
+
+    var codes = [...new Set(jogos.map(function(f){return f.code;}))];
+    Promise.all(codes.map(function(c){ return getMatches(c).then(function(m){ return [c,m]; }); })).then(function(pairs){
+      var matchesByCode = {};
+      pairs.forEach(function(p){ matchesByCode[p[0]] = p[1]; });
+      var cards = jogos.map(function(f){
+        var matches = matchesByCode[f.code];
+        var resultado = PoissonModel.analisarConfronto(matches, f.h, f.a, f.d);
+        var pick = melhorMercado(resultado, f.code, f.h, f.a);
+        var meta = leagues.filter(function(l){return l.code===f.code;})[0];
+
+        if(!pick){
+          return '<div class="card pick-card"><div class="pick-top"><span class="pick-teams">'+f.h+' x '+f.a+'</span><span class="pick-league">'+meta.country+' — '+meta.leagueName+' · '+(f.t||'')+'</span></div>' +
+            '<div class="warn-note">Nenhum mercado com sinal validado o suficiente pra esse confronto (amostra baixa ou probabilidade fora das faixas testadas).</div></div>';
+        }
+
+        return '<div class="card pick-card">' +
+          '<div class="pick-top"><span class="pick-teams">'+f.h+' x '+f.a+'</span><span class="pick-league">'+meta.country+' — '+meta.leagueName+' · '+(f.t||'')+'</span></div>' +
+          '<div class="pick-market"><span class="num">'+Math.round(pick.prob*100)+'%</span><span class="lbl">'+pick.label+'</span></div>' +
+          '<div class="pick-explain">'+explicacao(resultado, pick.key, f.h, f.a, pick.label)+'</div>' +
+          '<div class="pick-foot">Acerto real validado por backtest nessa faixa: '+pick.taxaReal+'% (em '+pick.n+' jogos) · gols esperados '+resultado.expCasa.toFixed(2)+' x '+resultado.expFora.toFixed(2)+'</div>' +
+        '</div>';
+      });
+      els.diaWrap.innerHTML = cards.join('');
+    });
+  }
+
+  function gerarMultipla(){
+    var data = els.multData.value;
+    var mercadoFiltro = els.multMercado.value;
+    var confMin = parseFloat(els.multConfianca.value);
+    var n = parseInt(els.multN.value, 10);
+
+    var jogos = fixtures.filter(function(f){ return f.d === data; });
+    if(!jogos.length){ els.multiplaWrap.innerHTML = '<div class="card empty">Sem jogos nessa data.</div>'; return; }
+    els.multiplaWrap.innerHTML = '<p class="status-line">calculando…</p>';
+
+    var codes = [...new Set(jogos.map(function(f){return f.code;}))];
+    Promise.all(codes.map(function(c){ return getMatches(c).then(function(m){ return [c,m]; }); })).then(function(pairs){
+      var matchesByCode = {};
+      pairs.forEach(function(p){ matchesByCode[p[0]] = p[1]; });
+
+      var candidatos = [];
+      jogos.forEach(function(f){
+        var resultado = PoissonModel.analisarConfronto(matchesByCode[f.code], f.h, f.a, f.d);
+        var melhorDoJogo = null;
+
+        if(mercadoFiltro==='auto'){
+          CORE_MARKETS.forEach(function(family){
+            var fc = favoredCandidate(resultado, family, f.h, f.a);
+            if(!fc) return;
+            var faixa = lookupCalibracao(f.code, fc.calibKey, fc.prob);
+            if(!faixa) return;
+            var taxa = faixa.taxaAcerto/100;
+            if(taxa < confMin) return;
+            var cand = { f:f, key:family, label:fc.label, prob:fc.prob, taxaReal:faixa.taxaAcerto, n:faixa.n };
+            if(!melhorDoJogo || cand.taxaReal > melhorDoJogo.taxaReal) melhorDoJogo = cand;
+          });
+        } else {
+          // mercado travado explicitamente pelo usuário: usa a probabilidade literal desse lado,
+          // mesmo que o modelo prefira o lado oposto (é isso que foi pedido).
+          var prob = probParaMercado(resultado, mercadoFiltro);
+          var faixa2 = lookupCalibracao(f.code, mercadoFiltro, prob);
+          if(faixa2 && (faixa2.taxaAcerto/100) >= confMin){
+            var label2 = mercadoFiltro==='vitoria' ? (resultado.prob1x2.H>=resultado.prob1x2.A ? 'Vitória '+f.h : 'Vitória '+f.a) : MERCADO_LABEL[mercadoFiltro];
+            melhorDoJogo = { f:f, key:mercadoFiltro, label:label2, prob:prob, taxaReal:faixa2.taxaAcerto, n:faixa2.n };
+          }
+        }
+        if(melhorDoJogo) candidatos.push(melhorDoJogo);
+      });
+
+      candidatos.sort(function(a,b){ return b.taxaReal - a.taxaReal; });
+      var escolhidos = candidatos.slice(0, n);
+
+      if(!escolhidos.length){
+        els.multiplaWrap.innerHTML = '<div class="card empty">Nenhum jogo bateu esse critério nessa data. Tenta baixar a confiança mínima ou trocar o mercado.</div>';
+        return;
+      }
+
+      var avisoQtd = escolhidos.length < n ? '<div class="warn-note">Só achei '+escolhidos.length+' de '+n+' jogos pedidos que batem esse critério nessa data (fonte gratuita tem calendário curto — veja <a href="calendario.html">Próximos Jogos</a>).</div>' : '';
+      var avisoSinalFraco = SEM_SINAL[mercadoFiltro] ? '<div class="warn-note">⚠️ Esse mercado não teve sinal confiável no nosso backtest (acerto real fica baixo mesmo em alta probabilidade do modelo) — os números de acerto real abaixo mostram isso, use com cautela.</div>' : '';
+
+      var probCombinada = escolhidos.reduce(function(acc, c){ return acc * (c.taxaReal/100); }, 1);
+
+      var meta = leagues;
+      var cards = escolhidos.map(function(c){
+        var lm = meta.filter(function(l){return l.code===c.f.code;})[0];
+        return '<div class="card pick-card">' +
+          '<div class="pick-top"><span class="pick-teams">'+c.f.h+' x '+c.f.a+'</span><span class="pick-league">'+lm.country+' — '+lm.leagueName+'</span></div>' +
+          '<div class="pick-market"><span class="num">'+Math.round(c.prob*100)+'%</span><span class="lbl">'+c.label+'</span></div>' +
+          '<div class="pick-foot">Acerto real validado: '+c.taxaReal+'% (em '+c.n+' jogos do backtest)</div>' +
+        '</div>';
+      }).join('');
+
+      els.multiplaWrap.innerHTML = avisoQtd + avisoSinalFraco +
+        '<div class="card" style="padding:20px;margin-bottom:14px;"><div class="hero-label">Múltipla com <strong>'+escolhidos.length+' jogos</strong></div>' +
+        '<div class="hero-stat"><span class="num" style="font-size:40px;">'+(probCombinada*100).toFixed(1)+'%</span><span class="num-sub">probabilidade combinada estimada, multiplicando o acerto real validado de cada jogo — assume que os jogos são independentes, o que é uma simplificação.</span></div></div>' +
+        cards;
+    });
+  }
+})();
+</script>

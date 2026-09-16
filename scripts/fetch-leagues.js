@@ -144,6 +144,46 @@ async function fetchExtraLeague(code) {
   return all.filter((m) => keep.has(m.season));
 }
 
+function computeAggregates(matches) {
+  const n = matches.length;
+  if (!n) return null;
+  let goals = 0, btts = 0, over25 = 0, hWin = 0, draw = 0, aWin = 0;
+  for (const m of matches) {
+    const total = m.hg + m.ag;
+    goals += total;
+    if (m.hg > 0 && m.ag > 0) btts++;
+    if (total > 2.5) over25++;
+    if (m.res === 'H') hWin++; else if (m.res === 'D') draw++; else if (m.res === 'A') aWin++;
+  }
+  return {
+    avgGoals: +(goals / n).toFixed(2),
+    pctBtts: +(btts / n * 100).toFixed(1),
+    pctOver25: +(over25 / n * 100).toFixed(1),
+    pctHomeWin: +(hWin / n * 100).toFixed(1),
+    pctDraw: +(draw / n * 100).toFixed(1),
+    pctAwayWin: +(aWin / n * 100).toFixed(1),
+  };
+}
+
+const FIXTURES_URL = 'https://www.football-data.co.uk/fixtures.csv';
+
+async function fetchFixtures() {
+  const rows = await downloadCsv(FIXTURES_URL);
+  if (!rows) return [];
+  return rows.map((r) => {
+    const code = str(r.Div);
+    if (!code || !MAIN_LEAGUES[code]) return null;
+    const [country, leagueName] = MAIN_LEAGUES[code];
+    const d = parseDate(r.Date);
+    const h = str(r.HomeTeam), a = str(r.AwayTeam);
+    if (!d || !h || !a) return null;
+    return {
+      code, country, leagueName, d, t: str(r.Time), h, a,
+      oddsH: num(r.AvgH), oddsD: num(r.AvgD), oddsA: num(r.AvgA),
+    };
+  }).filter(Boolean);
+}
+
 async function main() {
   const catalog = [];
   const statusOk = [], statusFail = [];
@@ -158,6 +198,8 @@ async function main() {
     catalog.push({
       code, country, leagueName, tier: 'principal', matchCount: matches.length, teamCount: teams.length,
       hasHT: matches.some((m) => m.hthg !== null), hasCorners: matches.some((m) => m.hc !== null), hasCards: matches.some((m) => m.hy !== null),
+      agg: computeAggregates(matches),
+      seasons: [...new Set(matches.map((m) => m.season))].sort(),
     });
     statusOk.push(code);
     console.log(`ok (${matches.length} jogos)`);
@@ -173,10 +215,17 @@ async function main() {
     catalog.push({
       code, country, leagueName, tier: 'extra', matchCount: matches.length, teamCount: teams.length,
       hasHT: false, hasCorners: false, hasCards: false,
+      agg: computeAggregates(matches),
+      seasons: [...new Set(matches.map((m) => m.season))].sort(),
     });
     statusOk.push(code);
     console.log(`ok (${matches.length} jogos)`);
   }
+
+  process.stdout.write('Baixando calendário de próximos jogos (ligas principais)... ');
+  const fixtures = await fetchFixtures();
+  fs.writeFileSync(path.join(DATA_DIR, 'fixtures.json'), JSON.stringify({ updatedAt: new Date().toISOString(), fixtures }));
+  console.log(`ok (${fixtures.length} jogos futuros)`);
 
   catalog.sort((a, b) => (a.tier === b.tier ? a.country.localeCompare(b.country) : a.tier === 'principal' ? -1 : 1));
   fs.writeFileSync(path.join(DATA_DIR, 'leagues.json'), JSON.stringify({

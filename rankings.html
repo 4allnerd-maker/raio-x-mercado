@@ -1,0 +1,212 @@
+<title>Rankings — Raio-X do Mercado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+<nav class="topnav">
+  <a href="index.html" class="topnav-brand">Raio-X ⚽ Mercado</a>
+  <div class="topnav-links">
+    <a href="index.html">Início</a>
+    <a href="analise.html">Análise</a>
+    <a href="classificacao.html">Classificação</a>
+    <a href="calendario.html">Próximos Jogos</a>
+    <a href="rankings.html" class="active">Rankings</a>
+    <a href="sinais.html">Sinais</a>
+    <a href="responsavel.html">Jogo Responsável</a>
+  </div>
+</nav>
+
+<div class="wrap wide">
+  <h1>Rankings</h1>
+  <p class="lede">Comparativos entre campeonatos e ranking de times por mercado, usando todo o histórico da base.</p>
+
+  <div class="seg" id="seg-modo" style="max-width:420px;">
+    <button type="button" data-val="ligas" class="active">Comparar ligas</button>
+    <button type="button" data-val="times">Ranking de times</button>
+  </div>
+
+  <div id="painel-ligas">
+    <div class="field" style="max-width:320px;">
+      <label for="sel-metrica">Ordenar por</label>
+      <select id="sel-metrica">
+        <option value="avgGoals">Média de gols por jogo</option>
+        <option value="pctBtts">% Ambas marcam (BTTS)</option>
+        <option value="pctOver25">% Over 2.5 gols</option>
+        <option value="pctHomeWin">% vitória do mandante</option>
+        <option value="pctDraw">% empates</option>
+        <option value="pctAwayWin">% vitória do visitante</option>
+      </select>
+    </div>
+    <div id="ligas-wrap"><p class="status-line">carregando…</p></div>
+  </div>
+
+  <div id="painel-times" style="display:none;">
+    <div class="card form-card" style="flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:16px;">
+      <div class="field" style="flex:1;min-width:200px;">
+        <label for="sel-mercado">Mercado</label>
+        <select id="sel-mercado">
+          <option value="over05">Over 0.5 gols</option>
+          <option value="over15" selected>Over 1.5 gols</option>
+          <option value="over25">Over 2.5 gols</option>
+          <option value="over35">Over 3.5 gols</option>
+          <option value="under25">Under 2.5 gols</option>
+          <option value="under35">Under 3.5 gols</option>
+          <option value="btts">Ambas marcam (BTTS)</option>
+          <option value="vitoria">Vitória do time</option>
+          <option value="naoperder">Não perder (dupla chance)</option>
+        </select>
+      </div>
+      <div class="field" style="flex:1;min-width:160px;">
+        <label>Condição</label>
+        <div class="seg small" id="seg-condicao">
+          <button type="button" data-val="mandante" class="active">Mandante</button>
+          <button type="button" data-val="visitante">Visitante</button>
+        </div>
+      </div>
+      <div class="field" style="flex:1;min-width:160px;">
+        <label>Janela</label>
+        <div class="seg small" id="seg-janela">
+          <button type="button" data-val="10" class="active">Últimos 10</button>
+          <button type="button" data-val="full">Histórico completo</button>
+        </div>
+      </div>
+    </div>
+    <div id="times-wrap"><p class="status-line">clique em "Ranking de times" pra carregar (baixa dados de 34 ligas, pode levar alguns segundos)…</p></div>
+  </div>
+
+  <footer>Fonte: histórico público de resultados do football-data.co.uk. Ferramenta de apoio à análise — não é recomendação de aposta. <a href="responsavel.html">Jogue com responsabilidade →</a></footer>
+</div>
+
+<script>
+(function(){
+  var leagues = null;
+  var teamStatsCache = null; // [{team, code, country, leagueName, condicao, stats}]
+  var state = { modo:'ligas', metrica:'avgGoals', mercado:'over15', condicao:'mandante', janela:'10' };
+
+  var els = {
+    segModo: document.getElementById('seg-modo'),
+    painelLigas: document.getElementById('painel-ligas'),
+    painelTimes: document.getElementById('painel-times'),
+    metrica: document.getElementById('sel-metrica'),
+    ligasWrap: document.getElementById('ligas-wrap'),
+    mercado: document.getElementById('sel-mercado'),
+    segCondicao: document.getElementById('seg-condicao'),
+    segJanela: document.getElementById('seg-janela'),
+    timesWrap: document.getElementById('times-wrap')
+  };
+
+  var METRICA_LABEL = {
+    avgGoals: { fmt:function(v){return v.toFixed(2);}, label:'gols por jogo' },
+    pctBtts: { fmt:function(v){return v.toFixed(1)+'%';}, label:'dos jogos com BTTS' },
+    pctOver25: { fmt:function(v){return v.toFixed(1)+'%';}, label:'dos jogos com over 2.5' },
+    pctHomeWin: { fmt:function(v){return v.toFixed(1)+'%';}, label:'vitórias do mandante' },
+    pctDraw: { fmt:function(v){return v.toFixed(1)+'%';}, label:'empates' },
+    pctAwayWin: { fmt:function(v){return v.toFixed(1)+'%';}, label:'vitórias do visitante' }
+  };
+
+  fetch('data/leagues.json', {cache:'no-store'}).then(function(r){ return r.json(); }).then(function(d){
+    leagues = d.leagues;
+    renderLigas();
+  });
+
+  els.metrica.addEventListener('change', function(){ state.metrica = els.metrica.value; renderLigas(); });
+
+  function renderLigas(){
+    var metrica = state.metrica;
+    var rows = leagues.filter(function(l){ return l.agg; }).map(function(l){
+      return { code:l.code, nome:l.country+' — '+l.leagueName, tier:l.tier, valor:l.agg[metrica] };
+    }).sort(function(a,b){ return b.valor - a.valor; });
+
+    var max = rows[0] ? rows[0].valor : 1;
+    var fmt = METRICA_LABEL[metrica].fmt;
+
+    var body = rows.map(function(r, i){
+      var pct = Math.max(4, (r.valor/max)*100);
+      return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);">' +
+        '<span style="width:22px;font-family:JetBrains Mono,monospace;font-size:12px;color:var(--text-muted);">'+(i+1)+'</span>' +
+        '<span style="width:220px;font-size:13px;flex-shrink:0;">'+r.nome+(r.tier==='extra'?' <span class="hint" style="font-size:10.5px;">(extra)</span>':'')+'</span>' +
+        '<span style="flex:1;background:var(--surface-2);border-radius:6px;height:20px;position:relative;overflow:hidden;">' +
+          '<span style="display:block;height:100%;width:'+pct+'%;background:var(--accent);border-radius:6px;"></span>' +
+        '</span>' +
+        '<span style="width:70px;text-align:right;font-family:JetBrains Mono,monospace;font-weight:600;font-size:13px;">'+fmt(r.valor)+'</span>' +
+      '</div>';
+    }).join('');
+
+    els.ligasWrap.innerHTML = '<div class="card" style="padding:18px 20px;">'+body+'</div>';
+  }
+
+  els.segModo.addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if(!btn) return;
+    Array.prototype.forEach.call(els.segModo.children, function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    state.modo = btn.dataset.val;
+    els.painelLigas.style.display = state.modo==='ligas' ? '' : 'none';
+    els.painelTimes.style.display = state.modo==='times' ? '' : 'none';
+    if(state.modo==='times' && !teamStatsCache) loadTeamStats();
+  });
+
+  els.mercado.addEventListener('change', function(){ state.mercado = els.mercado.value; renderTimes(); });
+  els.segCondicao.addEventListener('click', function(e){
+    var btn = e.target.closest('button'); if(!btn) return;
+    Array.prototype.forEach.call(els.segCondicao.children, function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    state.condicao = btn.dataset.val;
+    renderTimes();
+  });
+  els.segJanela.addEventListener('click', function(e){
+    var btn = e.target.closest('button'); if(!btn) return;
+    Array.prototype.forEach.call(els.segJanela.children, function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    state.janela = btn.dataset.val;
+    renderTimes();
+  });
+
+  function loadTeamStats(){
+    els.timesWrap.innerHTML = '<p class="status-line">carregando estatísticas de todos os times (34 ligas)…</p>';
+    var codes = leagues.map(function(l){ return l.code; });
+    Promise.all(codes.map(function(code){
+      return fetch('data/team-stats/'+code+'.json', {cache:'no-store'}).then(function(r){ return r.json(); }).then(function(data){
+        var meta = leagues.filter(function(l){ return l.code===code; })[0];
+        var out = [];
+        Object.keys(data).forEach(function(team){
+          ['mandante','visitante'].forEach(function(cond){
+            out.push({ team:team, code:code, nome:meta.country+' — '+meta.leagueName, condicao:cond, stats:data[team][cond] });
+          });
+        });
+        return out;
+      });
+    })).then(function(lists){
+      teamStatsCache = lists.flat();
+      renderTimes();
+    });
+  }
+
+  function renderTimes(){
+    if(!teamStatsCache){ return; }
+    var filtered = teamStatsCache.filter(function(t){ return t.condicao === state.condicao; });
+    var rows = filtered.map(function(t){
+      var s = t.stats[state.mercado];
+      var r = state.janela==='10' ? s.r10 : s.rFull;
+      var n = state.janela==='10' ? s.n10 : s.nFull;
+      return { time:t.team, nome:t.nome, r:r, n:n };
+    }).filter(function(r){ return r.r !== null && r.n >= (state.janela==='10' ? 8 : 15); })
+      .sort(function(a,b){ return b.r - a.r; })
+      .slice(0, 30);
+
+    if(!rows.length){
+      els.timesWrap.innerHTML = '<div class="card empty">Sem times com amostra suficiente pra esse filtro.</div>';
+      return;
+    }
+
+    var body = rows.map(function(r, i){
+      return '<tr><td>'+(i+1)+'</td><td>'+r.time+'</td><td>'+r.nome+'</td><td><strong>'+r.r+'%</strong></td><td>'+r.n+' jogos</td></tr>';
+    }).join('');
+
+    els.timesWrap.innerHTML = '<div class="card"><div class="table-wrap"><table>' +
+      '<thead><tr><th>#</th><th>Time</th><th>Campeonato</th><th>Taxa</th><th>Amostra</th></tr></thead>' +
+      '<tbody>'+body+'</tbody></table></div><div class="table-foot">Top 30 times · '+(state.condicao==='mandante'?'como mandante':'como visitante')+' · '+(state.janela==='10'?'últimos 10 jogos':'histórico completo')+'</div></div>';
+  }
+})();
+</script>

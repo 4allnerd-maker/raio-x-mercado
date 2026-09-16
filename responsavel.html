@@ -1,0 +1,64 @@
+<title>Jogo Responsável — Raio-X do Mercado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .rg-section{padding:22px 24px;display:flex;flex-direction:column;gap:10px;}
+  .rg-section h2{font-size:17px;}
+  .rg-section p, .rg-section li{font-size:13.5px;color:var(--text-muted);line-height:1.6;}
+  .rg-section ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;}
+</style>
+
+<nav class="topnav">
+  <a href="index.html" class="topnav-brand">Raio-X ⚽ Mercado</a>
+  <div class="topnav-links">
+    <a href="index.html">Início</a>
+    <a href="analise.html">Análise</a>
+    <a href="classificacao.html">Classificação</a>
+    <a href="calendario.html">Próximos Jogos</a>
+    <a href="rankings.html">Rankings</a>
+    <a href="sinais.html">Sinais</a>
+    <a href="responsavel.html" class="active">Jogo Responsável</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <h1>Jogo Responsável</h1>
+  <p class="lede">Antes de usar qualquer número desta ferramenta pra apostar de verdade, leia isso.</p>
+
+  <div class="card rg-section">
+    <h2>O que o Raio-X do Mercado é</h2>
+    <p>Uma ferramenta de <strong>análise estatística sobre dados históricos</strong>. Ela organiza o retrospecto dos times e, quando você informa um adversário, roda um modelo de probabilidade (Poisson, força de ataque/defesa) pra estimar a chance de cada mercado — comparando essa estimativa contra o que realmente aconteceu no passado em situações parecidas (backtest).</p>
+  </div>
+
+  <div class="card rg-section">
+    <h2>O que ela NÃO é</h2>
+    <ul>
+      <li>Não é uma máquina que prevê o futuro. Futebol tem alta variância — lesão de última hora, arbitragem, clima, motivação de um dia específico: nada disso está nos números.</li>
+      <li>Uma probabilidade de 80% não é uma certeza. Em 10 jogos parecidos com "80% de chance", o modelo espera errar em cerca de 2 deles — e não tem como saber de antemão qual.</li>
+      <li>Não é recomendação financeira nem indicação de aposta. É apoio à decisão: ajuda a entender o contexto antes do jogo, pra você minimizar perdas e melhorar o potencial de ganho ao longo do tempo — não elimina o risco.</li>
+      <li>Desempenho passado não garante desempenho futuro, mesmo quando validado por backtest.</li>
+    </ul>
+  </div>
+
+  <div class="card rg-section">
+    <h2>Diretrizes de jogo responsável</h2>
+    <ul>
+      <li><strong>Apenas +18.</strong> Apostas esportivas não são permitidas para menores de idade.</li>
+      <li><strong>Defina um limite de valor e de tempo antes de começar</strong> — e respeite mesmo se estiver perdendo (ou ganhando).</li>
+      <li><strong>Nunca aposte o que você não pode perder.</strong> Não é dinheiro de contas essenciais, e não é uma fonte de renda.</li>
+      <li><strong>Não tente "recuperar o prejuízo"</strong> aumentando o valor das apostas depois de uma perda. Essa é a porta de entrada mais comum pro descontrole.</li>
+      <li><strong>Aposta não resolve problema financeiro.</strong> Se você está apostando pra pagar uma conta ou sair de uma dívida, pare e procure ajuda.</li>
+      <li><strong>Preste atenção em sinais de alerta:</strong> apostar escondido de quem convive com você, se irritar quando perguntam sobre suas apostas, pedir dinheiro emprestado pra apostar, ou pensar em apostas boa parte do dia.</li>
+      <li>Se qualquer um desses sinais soar familiar, considere conversar com um profissional de saúde mental ou buscar um grupo de apoio como os Jogadores Anônimos — existem no Brasil e o atendimento é gratuito e sigiloso.</li>
+    </ul>
+  </div>
+
+  <div class="card rg-section">
+    <h2>Sobre os "Sinais"</h2>
+    <p>A aba de Sinais mostra o mercado com maior <em>consistência histórica validada</em> pra cada jogo — não o mercado "certo". Mesmo o mercado mais consistente da base erra uma parte relevante das vezes (você pode conferir o número exato de acerto real de cada faixa, é sempre mostrado junto). Trate como um ponto de partida pra sua própria análise, não como o veredito final.</p>
+  </div>
+
+  <footer>Fonte: histórico público de resultados do football-data.co.uk. Ferramenta de apoio à análise — não é recomendação de aposta.</footer>
+</div>

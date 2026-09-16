@@ -1,0 +1,149 @@
+<title>Classificação — Raio-X do Mercado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+<nav class="topnav">
+  <a href="index.html" class="topnav-brand">Raio-X ⚽ Mercado</a>
+  <div class="topnav-links">
+    <a href="index.html">Início</a>
+    <a href="analise.html">Análise</a>
+    <a href="classificacao.html" class="active">Classificação</a>
+    <a href="calendario.html">Próximos Jogos</a>
+    <a href="rankings.html">Rankings</a>
+    <a href="sinais.html">Sinais</a>
+    <a href="responsavel.html">Jogo Responsável</a>
+  </div>
+</nav>
+
+<div class="wrap wide">
+  <h1>Classificação</h1>
+  <p class="lede">Tabela calculada a partir do nosso histórico de resultados — pode ter 1 dia de atraso em relação ao site oficial do campeonato.</p>
+
+  <div class="card form-card" style="flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:16px;">
+    <div class="field" style="flex:1;min-width:220px;">
+      <label for="sel-campeonato">Campeonato</label>
+      <select id="sel-campeonato"><option value="">Carregando…</option></select>
+    </div>
+    <div class="field" style="flex:1;min-width:160px;">
+      <label for="sel-temporada">Temporada</label>
+      <select id="sel-temporada"></select>
+    </div>
+    <div class="field" style="flex:1;min-width:220px;">
+      <label>Visão</label>
+      <div class="seg small" id="seg-visao">
+        <button type="button" data-val="geral" class="active">Geral</button>
+        <button type="button" data-val="casa">Casa</button>
+        <button type="button" data-val="fora">Fora</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tabela-wrap"></div>
+
+  <footer>Fonte: histórico público de resultados do football-data.co.uk. Ferramenta de apoio à análise — não é recomendação de aposta. <a href="responsavel.html">Jogue com responsabilidade →</a></footer>
+</div>
+
+<script>
+(function(){
+  var leagues = null;
+  var leagueCache = {};
+  var state = { code:null, season:null, visao:'geral' };
+
+  var els = {
+    campeonato: document.getElementById('sel-campeonato'),
+    temporada: document.getElementById('sel-temporada'),
+    segVisao: document.getElementById('seg-visao'),
+    tabelaWrap: document.getElementById('tabela-wrap')
+  };
+
+  fetch('data/leagues.json', {cache:'no-store'}).then(function(r){ return r.json(); }).then(function(d){
+    leagues = d.leagues;
+    var principais = leagues.filter(function(l){ return l.tier==='principal'; });
+    var extras = leagues.filter(function(l){ return l.tier==='extra'; });
+    function opt(l){ return '<option value="'+l.code+'">'+l.country+' — '+l.leagueName+'</option>'; }
+    els.campeonato.innerHTML =
+      '<optgroup label="Ligas principais">' + principais.map(opt).join('') + '</optgroup>' +
+      '<optgroup label="Ligas extras">' + extras.map(opt).join('') + '</optgroup>';
+    var defaultCode = leagues.some(function(l){ return l.code==='BRA'; }) ? 'BRA' : leagues[0].code;
+    els.campeonato.value = defaultCode;
+    loadLeague(defaultCode);
+  });
+
+  function loadLeague(code){
+    state.code = code;
+    var meta = leagues.filter(function(l){ return l.code===code; })[0];
+    els.temporada.innerHTML = meta.seasons.slice().reverse().map(function(s){ return '<option value="'+s+'">'+seasonLabel(s)+'</option>'; }).join('');
+    state.season = meta.seasons[meta.seasons.length-1];
+    els.temporada.value = state.season;
+
+    var p = leagueCache[code] ? Promise.resolve(leagueCache[code]) : fetch('data/matches/'+code+'.json', {cache:'no-store'}).then(function(r){return r.json();}).then(function(db){ leagueCache[code]=db; return db; });
+    p.then(function(db){ render(db); });
+  }
+
+  function seasonLabel(s){
+    if(/^\d{4}$/.test(s)) return s; // ligas extra: ano cheio
+    return '20'+s.slice(0,2)+'/'+s.slice(2); // ligas principais: ex '2627' -> 2026/27
+  }
+
+  els.campeonato.addEventListener('change', function(){ loadLeague(els.campeonato.value); });
+  els.temporada.addEventListener('change', function(){
+    state.season = els.temporada.value;
+    render(leagueCache[state.code]);
+  });
+  els.segVisao.addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if(!btn) return;
+    Array.prototype.forEach.call(els.segVisao.children, function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    state.visao = btn.dataset.val;
+    render(leagueCache[state.code]);
+  });
+
+  function render(db){
+    if(!db) return;
+    var matches = db.matches.filter(function(m){ return m.season === state.season; });
+    var table = {};
+    function row(team){
+      if(!table[team]) table[team] = { time:team, pj:0, v:0, e:0, d:0, gp:0, gc:0 };
+      return table[team];
+    }
+    matches.forEach(function(m){
+      var incluiCasa = state.visao === 'geral' || state.visao === 'casa';
+      var incluiFora = state.visao === 'geral' || state.visao === 'fora';
+      if(incluiCasa){
+        var rh = row(m.h);
+        rh.pj++; rh.gp += m.hg; rh.gc += m.ag;
+        if(m.hg>m.ag) rh.v++; else if(m.hg===m.ag) rh.e++; else rh.d++;
+      }
+      if(incluiFora){
+        var ra = row(m.a);
+        ra.pj++; ra.gp += m.ag; ra.gc += m.hg;
+        if(m.ag>m.hg) ra.v++; else if(m.ag===m.hg) ra.e++; else ra.d++;
+      }
+    });
+    var rows = Object.values(table).map(function(r){
+      r.sg = r.gp - r.gc;
+      r.pts = r.v*3 + r.e;
+      return r;
+    }).sort(function(a,b){ return b.pts - a.pts || b.sg - a.sg || b.gp - a.gp; });
+
+    if(!rows.length){
+      els.tabelaWrap.innerHTML = '<div class="card empty">Sem jogos suficientes pra montar a tabela nessa temporada/visão.</div>';
+      return;
+    }
+
+    var body = rows.map(function(r, i){
+      return '<tr' + (i<4 ? ' class="highlight"' : '') + '>' +
+        '<td>'+(i+1)+'</td><td>'+r.time+'</td><td>'+r.pj+'</td><td>'+r.v+'</td><td>'+r.e+'</td><td>'+r.d+'</td>' +
+        '<td>'+r.gp+'</td><td>'+r.gc+'</td><td>'+(r.sg>0?'+':'')+r.sg+'</td><td><strong>'+r.pts+'</strong></td>' +
+      '</tr>';
+    }).join('');
+
+    els.tabelaWrap.innerHTML = '<div class="card"><div class="table-wrap"><table>' +
+      '<thead><tr><th>#</th><th>Time</th><th>PJ</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th><th>Pts</th></tr></thead>' +
+      '<tbody>'+body+'</tbody></table></div><div class="table-foot">'+rows.length+' times · temporada '+seasonLabel(state.season)+'</div></div>';
+  }
+})();
+</script>

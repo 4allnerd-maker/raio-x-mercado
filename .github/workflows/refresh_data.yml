@@ -21,6 +21,7 @@ jobs:
       - name: Baixar ligas e recalcular estatísticas
         run: |
           node scripts/fetch-leagues.js
+          node scripts/team-stats.js
           node backtest.js
 
       - name: Commit e push se houver mudanças

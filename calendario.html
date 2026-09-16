@@ -1,0 +1,97 @@
+<title>Próximos Jogos — Raio-X do Mercado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+<nav class="topnav">
+  <a href="index.html" class="topnav-brand">Raio-X ⚽ Mercado</a>
+  <div class="topnav-links">
+    <a href="index.html">Início</a>
+    <a href="analise.html">Análise</a>
+    <a href="classificacao.html">Classificação</a>
+    <a href="calendario.html" class="active">Próximos Jogos</a>
+    <a href="rankings.html">Rankings</a>
+    <a href="sinais.html">Sinais</a>
+    <a href="responsavel.html">Jogo Responsável</a>
+  </div>
+</nav>
+
+<div class="wrap wide">
+  <h1>Próximos Jogos</h1>
+  <p class="lede">Calendário dos próximos confrontos, pra consultar antes de montar suas entradas.</p>
+  <div class="rg-banner">⚠️ <span><strong>Cobertura limitada:</strong> nossa fonte gratuita só publica calendário de próximos jogos pras ligas europeias principais, e com poucos dias de antecedência. Brasileirão e as demais ligas "extra" não aparecem aqui ainda — só no retrospecto histórico da <a href="analise.html">Análise</a>.</span></div>
+
+  <div class="field" style="max-width:320px;">
+    <label for="sel-campeonato">Filtrar por campeonato</label>
+    <select id="sel-campeonato"><option value="">Todos os campeonatos</option></select>
+  </div>
+
+  <div id="jogos-wrap"><p class="status-line">carregando calendário…</p></div>
+
+  <footer>Fonte: histórico público de resultados do football-data.co.uk. Ferramenta de apoio à análise — não é recomendação de aposta. <a href="responsavel.html">Jogue com responsabilidade →</a></footer>
+</div>
+
+<script>
+(function(){
+  var allFixtures = [];
+  var els = {
+    campeonato: document.getElementById('sel-campeonato'),
+    wrap: document.getElementById('jogos-wrap')
+  };
+
+  fetch('data/fixtures.json', {cache:'no-store'}).then(function(r){ return r.json(); }).then(function(d){
+    allFixtures = d.fixtures.slice().sort(function(a,b){ return a.d.localeCompare(b.d) || (a.t||'').localeCompare(b.t||''); });
+    var codes = [...new Set(allFixtures.map(function(f){ return f.code; }))];
+    var byCode = {};
+    allFixtures.forEach(function(f){ byCode[f.code] = f.country+' — '+f.leagueName; });
+    els.campeonato.innerHTML += codes.map(function(c){ return '<option value="'+c+'">'+byCode[c]+'</option>'; }).join('');
+    render();
+  }).catch(function(){
+    els.wrap.innerHTML = '<div class="card empty">Não consegui carregar o calendário agora.</div>';
+  });
+
+  els.campeonato.addEventListener('change', render);
+
+  function fmtDate(iso){
+    var p = iso.split('-');
+    var dias = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+    var dow = dias[new Date(iso+'T12:00:00Z').getUTCDay()];
+    return p[2]+'/'+p[1]+' ('+dow+')';
+  }
+
+  function render(){
+    var filtro = els.campeonato.value;
+    var list = filtro ? allFixtures.filter(function(f){ return f.code===filtro; }) : allFixtures;
+
+    if(!list.length){
+      els.wrap.innerHTML = '<div class="card empty">Nenhum jogo futuro disponível nessa fonte agora — tenta de novo mais perto da rodada.</div>';
+      return;
+    }
+
+    var groups = {};
+    var order = [];
+    list.forEach(function(f){
+      if(!groups[f.d]){ groups[f.d] = []; order.push(f.d); }
+      groups[f.d].push(f);
+    });
+
+    els.wrap.innerHTML = order.map(function(d){
+      var rows = groups[d].map(function(f){
+        var linkA = 'analise.html?campeonato='+encodeURIComponent(f.code)+'&time='+encodeURIComponent(f.h)+'&condicao=mandante&adversario='+encodeURIComponent(f.a);
+        return '<tr>' +
+          '<td>'+(f.t||'-')+'</td>' +
+          '<td>'+f.country+' — '+f.leagueName+'</td>' +
+          '<td>'+f.h+' x '+f.a+'</td>' +
+          '<td>'+(f.oddsH ? f.oddsH.toFixed(2)+' / '+f.oddsD.toFixed(2)+' / '+f.oddsA.toFixed(2) : '-')+'</td>' +
+          '<td><a class="btn-ghost" href="'+linkA+'">Analisar →</a></td>' +
+        '</tr>';
+      }).join('');
+      return '<div class="card" style="margin-bottom:14px;">' +
+        '<div class="table-title">'+fmtDate(d)+'</div>' +
+        '<div class="table-wrap"><table><thead><tr><th>Hora</th><th>Campeonato</th><th>Jogo</th><th>Odds (C/E/F)</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>' +
+      '</div>';
+    }).join('');
+  }
+})();
+</script>
