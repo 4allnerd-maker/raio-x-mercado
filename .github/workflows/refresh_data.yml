@@ -1,0 +1,36 @@
+name: Atualizar dados diariamente
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # 06:00 UTC todo dia
+  workflow_dispatch: {}   # permite rodar manualmente pela aba Actions
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Baixar ligas e recalcular estatísticas
+        run: |
+          node scripts/fetch-leagues.js
+          node backtest.js
+
+      - name: Commit e push se houver mudanças
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "Sem mudanças nos dados hoje."
+          else
+            git commit -m "Atualização automática dos dados ($(date -u +%Y-%m-%d))"
+            git push
+          fi

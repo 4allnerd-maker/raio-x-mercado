@@ -1,0 +1,655 @@
+<title>Raio-X do Mercado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF2ED;
+    --surface:#FFFFFF;
+    --surface-2:#E4EAE3;
+    --text:#101B15;
+    --text-muted:#5B6B61;
+    --border:#D6DED4;
+    --accent:#1B7A45;
+    --accent-strong:#125C33;
+    --accent-2:#C79A2B;
+    --good:#1B7A45;
+    --good-bg:#E3F2E6;
+    --bad:#B3392F;
+    --bad-bg:#FBE7E4;
+    --shadow: 0 1px 2px rgba(16,27,21,0.06), 0 8px 24px -12px rgba(16,27,21,0.18);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0D1512;
+      --surface:#141F19;
+      --surface-2:#1B2921;
+      --text:#EAF1EB;
+      --text-muted:#93A69B;
+      --border:#26362C;
+      --accent:#3FC57C;
+      --accent-strong:#5CDB93;
+      --accent-2:#E3B84D;
+      --good:#3FC57C;
+      --good-bg:#153524;
+      --bad:#E2685A;
+      --bad-bg:#3A1E1B;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px -14px rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0D1512;
+    --surface:#141F19;
+    --surface-2:#1B2921;
+    --text:#EAF1EB;
+    --text-muted:#93A69B;
+    --border:#26362C;
+    --accent:#3FC57C;
+    --accent-strong:#5CDB93;
+    --accent-2:#E3B84D;
+    --good:#3FC57C;
+    --good-bg:#153524;
+    --bad:#E2685A;
+    --bad-bg:#3A1E1B;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px -14px rgba(0,0,0,0.6);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    padding-inline:16px;
+    padding-block:28px 40px;
+    min-height:100%;
+  }
+  .wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:20px;}
+
+  .brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  .brand-mark{
+    font-family:'Oswald',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.14em;
+    color:var(--accent-strong);text-transform:uppercase;
+    background:var(--good-bg);border:1px solid var(--border);border-radius:999px;
+    padding:5px 12px;
+  }
+  .brand-sub{font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+
+  h1{
+    font-family:'Oswald',sans-serif;font-weight:600;font-size:clamp(26px,5vw,34px);
+    letter-spacing:-0.01em;margin:0;text-wrap:balance;
+  }
+  .lede{color:var(--text-muted);font-size:14.5px;line-height:1.55;max-width:52ch;margin:0;}
+
+  .card{
+    background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    box-shadow:var(--shadow);
+  }
+
+  /* ---- Screen 1: seletor ---- */
+  #screen-select .card{padding:24px;display:flex;flex-direction:column;gap:22px;}
+  .field{display:flex;flex-direction:column;gap:8px;}
+  .field label{
+    font-size:11.5px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--text-muted);
+  }
+  .field .hint{font-size:12px;color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0;}
+  select{
+    appearance:none;-webkit-appearance:none;
+    width:100%;padding:12px 40px 12px 14px;border-radius:10px;border:1px solid var(--border);
+    background:var(--surface-2) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%235B6B61" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>') no-repeat right 14px center;
+    color:var(--text);font-family:'Inter',sans-serif;font-size:15px;font-weight:500;
+    cursor:pointer;
+  }
+  select:disabled{opacity:0.7;cursor:not-allowed;}
+  select:focus-visible, .seg button:focus-visible, .btn-primary:focus-visible, .btn-ghost:focus-visible{
+    outline:2px solid var(--accent);outline-offset:2px;
+  }
+
+  .seg{display:flex;gap:8px;flex-wrap:wrap;}
+  .seg button{
+    flex:1 1 auto;padding:11px 14px;border-radius:10px;border:1px solid var(--border);
+    background:var(--surface-2);color:var(--text);font-family:'Inter',sans-serif;font-weight:600;
+    font-size:14px;cursor:pointer;transition:background .15s,color .15s,border-color .15s;
+    min-width:120px;
+  }
+  .seg button.active{background:var(--accent);border-color:var(--accent);color:#FFFFFF;}
+  .seg.small button{padding:8px 10px;min-width:0;font-size:13px;flex:1;}
+
+  .btn-primary{
+    width:100%;padding:15px 18px;border-radius:12px;border:none;background:var(--accent);
+    color:#fff;font-family:'Oswald',sans-serif;font-weight:600;font-size:16px;letter-spacing:0.02em;
+    cursor:pointer;transition:background .15s, transform .1s;text-transform:uppercase;
+  }
+  .btn-primary:hover{background:var(--accent-strong);}
+  .btn-primary:active{transform:scale(0.99);}
+  .btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+
+  .btn-ghost{
+    padding:9px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;
+    color:var(--text-muted);font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .btn-ghost:hover{color:var(--text);border-color:var(--text-muted);}
+
+  .status-line{font-size:13px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+
+  /* ---- Screen 2: dashboard ---- */
+  #screen-dashboard{display:none;flex-direction:column;gap:16px;}
+  #screen-dashboard.visible{display:flex;}
+  #screen-select.hidden{display:none;}
+
+  .crumbs{display:flex;flex-wrap:wrap;gap:6px;}
+  .crumb{
+    font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 10px;border-radius:999px;
+    background:var(--surface-2);border:1px solid var(--border);color:var(--text-muted);
+  }
+  .crumb strong{color:var(--text);font-weight:600;}
+
+  .hero{
+    padding:26px 24px;display:flex;flex-direction:column;gap:14px;
+    background:linear-gradient(160deg, var(--surface) 0%, var(--surface-2) 100%);
+  }
+  .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+  .hero-label{font-size:13px;color:var(--text-muted);max-width:34ch;line-height:1.45;}
+  .hero-label strong{color:var(--text);}
+  .badge{
+    font-family:'Inter',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:0.05em;
+    text-transform:uppercase;padding:6px 12px;border-radius:999px;white-space:nowrap;
+  }
+  .badge.alta{background:var(--good-bg);color:var(--good);}
+  .badge.media{background:#F6EFD9;color:#8A6A16;}
+  :root[data-theme="dark"] .badge.media, @media (prefers-color-scheme:dark){ .badge.media{background:#3A2F14;color:var(--accent-2);} }
+  .badge.baixa{background:var(--bad-bg);color:var(--bad);}
+
+  .hero-stat{display:flex;align-items:baseline;gap:14px;}
+  .hero-stat .num{
+    font-family:'Oswald',sans-serif;font-weight:700;font-size:clamp(56px,14vw,76px);
+    line-height:1;color:var(--accent-strong);font-variant-numeric:tabular-nums;
+  }
+  .hero-stat .num-sub{font-size:14px;color:var(--text-muted);line-height:1.4;max-width:22ch;}
+
+  .form-guide{display:flex;flex-direction:column;gap:8px;}
+  .form-guide .fg-label{font-size:12px;color:var(--text-muted);display:flex;justify-content:space-between;}
+  .fg-row{display:flex;gap:5px;flex-wrap:wrap;}
+  .fg-chip{
+    width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12.5px;color:#fff;flex:0 0 auto;
+    cursor:default;
+  }
+  .fg-chip.hit{background:var(--good);}
+  .fg-chip.miss{background:var(--bad);}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;}
+  .stat-tile{padding:16px;display:flex;flex-direction:column;gap:4px;}
+  .stat-tile .stat-num{
+    font-family:'Oswald',sans-serif;font-weight:600;font-size:24px;color:var(--text);
+    font-variant-numeric:tabular-nums;
+  }
+  .stat-tile .stat-label{font-size:11.5px;color:var(--text-muted);line-height:1.35;}
+
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:480px;}
+  thead th{
+    text-align:left;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);
+    padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;
+  }
+  tbody td{padding:11px 14px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;}
+  tbody tr:last-child td{border-bottom:none;}
+  .res-chip{
+    display:inline-flex;align-items:center;gap:5px;font-family:'Inter',sans-serif;font-weight:700;
+    font-size:11.5px;padding:3px 9px;border-radius:999px;
+  }
+  .res-chip.hit{background:var(--good-bg);color:var(--good);}
+  .res-chip.miss{background:var(--bad-bg);color:var(--bad);}
+
+  .table-title{font-family:'Oswald',sans-serif;font-weight:600;font-size:16px;padding:18px 18px 4px;}
+  .table-foot{font-size:12px;color:var(--text-muted);padding:4px 18px 16px;}
+
+  .poisson-card{padding:20px;display:flex;flex-direction:column;gap:10px;border-color:var(--accent-2);}
+  .poisson-title{font-family:'Oswald',sans-serif;font-weight:600;font-size:15px;color:var(--text);}
+  .exp-goals{font-size:13px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+  .poisson-prob{display:flex;align-items:baseline;gap:12px;}
+  .poisson-prob .num{font-family:'Oswald',sans-serif;font-weight:700;font-size:40px;color:var(--accent-2);font-variant-numeric:tabular-nums;}
+  .poisson-prob .num-sub{font-size:13px;color:var(--text-muted);max-width:24ch;line-height:1.4;}
+  .calib-note{font-size:12.5px;color:var(--text-muted);line-height:1.5;background:var(--surface-2);border-radius:8px;padding:10px 12px;}
+  .calib-note strong{color:var(--good);}
+  .warn-note{font-size:12.5px;color:var(--bad);line-height:1.5;background:var(--bad-bg);border-radius:8px;padding:10px 12px;}
+  .poisson-foot{font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+
+  .empty{padding:40px 20px;text-align:center;color:var(--text-muted);font-size:14px;}
+
+  footer{text-align:center;font-size:11.5px;color:var(--text-muted);padding-top:8px;}
+</style>
+
+<div class="wrap">
+
+  <div class="brand">
+    <span class="brand-mark">Raio-X ⚽</span>
+    <span class="brand-sub">análise histórica pré-jogo · dados não são atualizados em tempo real</span>
+  </div>
+
+  <section id="screen-select">
+    <h1>Monte sua análise</h1>
+    <p class="lede">Escolha o campeonato, o time, a condição de mando e o mercado. A gente cruza o histórico e te mostra a taxa de acerto direto no painel.</p>
+
+    <div class="card">
+      <div class="field">
+        <label for="sel-campeonato">Campeonato</label>
+        <select id="sel-campeonato"><option value="">Carregando campeonatos…</option></select>
+        <span class="hint" id="campeonato-hint"></span>
+      </div>
+
+      <div class="field">
+        <label for="sel-time">Time</label>
+        <select id="sel-time"><option value="">Selecione um campeonato</option></select>
+      </div>
+
+      <div class="field">
+        <label>Condição</label>
+        <div class="seg" id="seg-condicao">
+          <button type="button" data-val="mandante" class="active">Mandante</button>
+          <button type="button" data-val="visitante">Visitante</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="sel-adversario">Adversário <span class="hint">(opcional — ativa a previsão do confronto)</span></label>
+        <select id="sel-adversario"><option value="">Sem adversário definido</option></select>
+      </div>
+
+      <div class="field">
+        <label for="sel-mercado">Mercado</label>
+        <select id="sel-mercado"></select>
+      </div>
+
+      <div class="field">
+        <label>Janela de análise</label>
+        <div class="seg small" id="seg-janela">
+          <button type="button" data-val="5">Últimos 5</button>
+          <button type="button" data-val="10" class="active">Últimos 10</button>
+          <button type="button" data-val="15">Últimos 15</button>
+          <button type="button" data-val="20">Últimos 20</button>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-analisar" disabled>Analisar mercado →</button>
+      <span class="status-line" id="status-line">carregando base de dados…</span>
+    </div>
+  </section>
+
+  <section id="screen-dashboard">
+    <button class="btn-ghost" id="btn-voltar">← Nova análise</button>
+    <div class="crumbs" id="crumbs"></div>
+    <div id="dash-content"></div>
+  </section>
+
+  <footer>Fonte: histórico público de resultados do football-data.co.uk. Ferramenta de apoio à análise — não é recomendação de aposta.</footer>
+</div>
+
+<script src="poisson-model.js"></script>
+<script>
+(function(){
+  var FAMILY_LABEL = { gols:'Gols', resultado:'Resultado', golsht:'Intervalo (1ºT)', escanteios:'Escanteios', cartoes:'Cartões', reservado:'Em breve' };
+  var CALIB_KEY = { over05:'over05', over15:'over15', over25:'over25', under25:'over25', under35:'over35', btts:'btts' };
+  var MERCADOS_SEM_SINAL = { over25:true, under25:true, btts:true };
+  var POISSON_FAMILIES = { gols:true, resultado:true };
+
+  var leagues = null;      // catálogo data/leagues.json .leagues
+  var calibAll = null;     // data/calibracao.json (por código de liga)
+  var leagueCache = {};    // code -> {matches, teams}
+  var currentLeague = null; // {code, meta, matches, teams, mercados}
+  var state = { condicao:'mandante', janela:10 };
+
+  var els = {
+    campeonato: document.getElementById('sel-campeonato'),
+    campeonatoHint: document.getElementById('campeonato-hint'),
+    time: document.getElementById('sel-time'),
+    adversario: document.getElementById('sel-adversario'),
+    mercado: document.getElementById('sel-mercado'),
+    btnAnalisar: document.getElementById('btn-analisar'),
+    statusLine: document.getElementById('status-line'),
+    segCondicao: document.getElementById('seg-condicao'),
+    segJanela: document.getElementById('seg-janela'),
+    screenSelect: document.getElementById('screen-select'),
+    screenDash: document.getElementById('screen-dashboard'),
+    btnVoltar: document.getElementById('btn-voltar'),
+    crumbs: document.getElementById('crumbs'),
+    dashContent: document.getElementById('dash-content')
+  };
+
+  function buildMercados(meta){
+    var list = [];
+    [0.5,1.5,2.5,3.5].forEach(function(th){
+      list.push({ key:'over'+String(th).replace('.',''), label:'Over '+th+' gols', family:'gols',
+        hit:function(m){ return (m.hg+m.ag) > th; } });
+    });
+    list.push({ key:'under25', label:'Under 2.5 gols', family:'gols', hit:function(m){ return (m.hg+m.ag) < 2.5; } });
+    list.push({ key:'under35', label:'Under 3.5 gols', family:'gols', hit:function(m){ return (m.hg+m.ag) < 3.5; } });
+    list.push({ key:'btts', label:'Ambas marcam (BTTS)', family:'gols', hit:function(m){ return m.hg>0 && m.ag>0; } });
+    list.push({ key:'vitoria', label:'Vitória do time', family:'resultado', hit:function(m,c){ return c==='mandante' ? m.res==='H' : m.res==='A'; } });
+    list.push({ key:'naoperder', label:'Não perder (dupla chance)', family:'resultado', hit:function(m,c){ return c==='mandante' ? m.res!=='A' : m.res!=='H'; } });
+
+    if(meta && meta.hasHT){
+      [0.5,1.5].forEach(function(th){
+        list.push({ key:'htover'+String(th).replace('.',''), label:'Over '+th+' gols no intervalo', family:'golsht',
+          hit:function(m){ if(m.hthg===null||m.htag===null) return null; return (m.hthg+m.htag) > th; } });
+      });
+    }
+    if(meta && meta.hasCorners){
+      [8.5,9.5,10.5].forEach(function(th){
+        list.push({ key:'ccover'+String(th).replace('.',''), label:'Over '+th+' escanteios', family:'escanteios',
+          hit:function(m){ if(m.hc===null||m.ac===null) return null; return (m.hc+m.ac) > th; } });
+      });
+    }
+    if(meta && meta.hasCards){
+      [2.5,3.5,4.5].forEach(function(th){
+        list.push({ key:'cardover'+String(th).replace('.',''), label:'Over '+th+' cartões', family:'cartoes',
+          hit:function(m){ if(m.hy===null) return null; return ((m.hy||0)+(m.ay||0)+(m.hr||0)+(m.ar||0)) > th; } });
+      });
+    }
+    list.push({ key:'golsfinal', label:'Gols nos últimos 5-10min — em breve (falta dado de minuto do gol)', family:'reservado', disabled:true });
+    return list;
+  }
+
+  function mercadoOptionsHtml(list){
+    var byFamily = {}, order = [];
+    list.forEach(function(m){
+      if(!byFamily[m.family]){ byFamily[m.family] = []; order.push(m.family); }
+      byFamily[m.family].push(m);
+    });
+    return order.map(function(fam){
+      var opts = byFamily[fam].map(function(m){
+        return '<option value="'+m.key+'"'+(m.disabled?' disabled':'')+'>'+m.label+'</option>';
+      }).join('');
+      return '<optgroup label="'+FAMILY_LABEL[fam]+'">'+opts+'</optgroup>';
+    }).join('');
+  }
+
+  function fetchJson(url){ return fetch(url).then(function(r){ return r.json(); }); }
+
+  Promise.all([
+    fetchJson('data/leagues.json'),
+    fetchJson('data/calibracao.json').catch(function(){ return {}; })
+  ]).then(function(results){
+    leagues = results[0].leagues;
+    calibAll = results[1];
+
+    var principais = leagues.filter(function(l){ return l.tier === 'principal'; });
+    var extras = leagues.filter(function(l){ return l.tier === 'extra'; });
+    function opt(l){ return '<option value="'+l.code+'">'+l.country+' — '+l.leagueName+'</option>'; }
+    els.campeonato.innerHTML =
+      '<optgroup label="Ligas principais (dado completo: gols, intervalo, escanteios, cartões)">' + principais.map(opt).join('') + '</optgroup>' +
+      '<optgroup label="Ligas extras (só gols, resultado e odds)">' + extras.map(opt).join('') + '</optgroup>';
+
+    var defaultCode = leagues.some(function(l){ return l.code==='BRA'; }) ? 'BRA' : leagues[0].code;
+    els.campeonato.value = defaultCode;
+    loadLeague(defaultCode);
+  }).catch(function(err){
+    els.statusLine.textContent = 'Erro ao carregar o catálogo de campeonatos.';
+    console.error(err);
+  });
+
+  function loadLeague(code){
+    els.btnAnalisar.disabled = true;
+    els.statusLine.textContent = 'carregando dados da liga…';
+    var meta = leagues.filter(function(l){ return l.code === code; })[0];
+
+    var p = leagueCache[code] ? Promise.resolve(leagueCache[code]) : fetchJson('data/matches/' + code + '.json').then(function(db){
+      leagueCache[code] = db;
+      return db;
+    });
+
+    p.then(function(db){
+      var mercados = buildMercados(meta);
+      currentLeague = { code:code, meta:meta, matches:db.matches, teams:db.teams, mercados:mercados };
+
+      var teamOptions = db.teams.map(function(t){ return '<option value="'+t+'">'+t+'</option>'; }).join('');
+      els.time.innerHTML = teamOptions;
+      els.adversario.innerHTML = '<option value="">Sem adversário definido</option>' + teamOptions;
+      els.mercado.innerHTML = mercadoOptionsHtml(mercados);
+      els.mercado.value = 'over15';
+
+      var extras = [];
+      if(meta.hasHT) extras.push('intervalo');
+      if(meta.hasCorners) extras.push('escanteios');
+      if(meta.hasCards) extras.push('cartões');
+      els.campeonatoHint.textContent = extras.length
+        ? 'Essa liga também tem mercado de ' + extras.join(', ') + '.'
+        : 'Essa liga só tem gols, resultado e odds (sem escanteio/cartão/intervalo na fonte).';
+
+      els.btnAnalisar.disabled = false;
+      els.statusLine.textContent = db.matches.length + ' jogos carregados · ' + db.teams.length + ' times' + (calibAll[code] ? ' · modelo Poisson calibrado por backtest' : ' · sem backtest ainda (amostra pequena)');
+    }).catch(function(err){
+      els.statusLine.textContent = 'Erro ao carregar essa liga.';
+      console.error(err);
+    });
+  }
+
+  els.campeonato.addEventListener('change', function(){
+    loadLeague(els.campeonato.value);
+  });
+
+  els.segCondicao.addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if(!btn) return;
+    Array.prototype.forEach.call(els.segCondicao.children, function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    state.condicao = btn.dataset.val;
+  });
+
+  els.segJanela.addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if(!btn) return;
+    Array.prototype.forEach.call(els.segJanela.children, function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    state.janela = parseInt(btn.dataset.val, 10);
+  });
+
+  els.btnAnalisar.addEventListener('click', function(){
+    var time = els.time.value;
+    var mercadoKey = els.mercado.value;
+    var adversario = els.adversario.value;
+    runAnalysis(time, state.condicao, mercadoKey, state.janela, adversario);
+  });
+
+  els.btnVoltar.addEventListener('click', function(){
+    if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    els.screenDash.classList.remove('visible');
+    els.screenSelect.classList.remove('hidden');
+  });
+
+  function fmtDate(iso){ var p = iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0].slice(2); }
+  function fmtPct(x){ return Math.round(x * 100) + '%'; }
+
+  function lookupCalibracao(code, mercadoKey, prob){
+    var calibKey = CALIB_KEY[mercadoKey];
+    var calib = calibAll[code];
+    if(!calib || !calibKey || !calib[calibKey]) return null;
+    var faixas = calib[calibKey].faixas;
+    var limites = [[0,0.55],[0.55,0.60],[0.60,0.65],[0.65,0.70],[0.70,0.80],[0.80,1.01]];
+    for(var j=0;j<limites.length;j++){
+      if(prob >= limites[j][0] && prob < limites[j][1]){
+        var faixa = faixas[j];
+        return faixa && faixa.n > 0 ? faixa : null;
+      }
+    }
+    return null;
+  }
+
+  function poissonProbParaMercado(resultado, mercadoKey, condicao){
+    if(mercadoKey === 'over05' || mercadoKey === 'over15' || mercadoKey === 'over25'){
+      var th = mercadoKey === 'over05' ? 0.5 : mercadoKey === 'over15' ? 1.5 : 2.5;
+      return 1 - resultado.pUnder(th);
+    }
+    if(mercadoKey === 'under25') return resultado.pUnder(2.5);
+    if(mercadoKey === 'under35') return resultado.pUnder(3.5);
+    if(mercadoKey === 'btts') return resultado.probBtts.sim;
+    if(mercadoKey === 'vitoria') return condicao === 'mandante' ? resultado.prob1x2.H : resultado.prob1x2.A;
+    if(mercadoKey === 'naoperder') return condicao === 'mandante' ? (resultado.prob1x2.H + resultado.prob1x2.D) : (resultado.prob1x2.A + resultado.prob1x2.D);
+    return null;
+  }
+
+  function renderPoissonCard(team, condicao, mercado, adversario){
+    if(!mercado || !POISSON_FAMILIES[mercado.family]) return '';
+    if(!adversario || adversario === team || typeof PoissonModel === 'undefined') return '';
+    var refDate = currentLeague.matches[currentLeague.matches.length - 1].d;
+    var mandanteConfronto = condicao === 'mandante' ? team : adversario;
+    var visitanteConfronto = condicao === 'mandante' ? adversario : team;
+    var resultado = PoissonModel.analisarConfronto(currentLeague.matches, mandanteConfronto, visitanteConfronto, refDate);
+    var prob = poissonProbParaMercado(resultado, mercado.key, condicao);
+    if(prob === null) return '';
+
+    var faixa = lookupCalibracao(currentLeague.code, mercado.key, prob);
+    var semSinal = MERCADOS_SEM_SINAL[mercado.key];
+
+    var confiancaHtml;
+    if(semSinal){
+      confiancaHtml = '<div class="warn-note">⚠️ No backtest dessa liga, esse mercado não teve sinal confiável (acerto real ficou baixo mesmo quando o modelo indicava alta probabilidade). Os números abaixo são só informativos.</div>';
+    } else if(faixa){
+      confiancaHtml = '<div class="calib-note">Quando o modelo indicou algo nessa faixa de probabilidade no passado, o acerto real observado nessa liga foi <strong>'+faixa.taxaAcerto+'%</strong> (em '+faixa.n+' jogos do backtest).</div>';
+    } else {
+      confiancaHtml = '<div class="calib-note">Amostra insuficiente no backtest para validar essa faixa de probabilidade neste mercado.</div>';
+    }
+
+    return '<div class="card poisson-card">' +
+      '<div class="poisson-title">Previsão do modelo para '+mandanteConfronto+' x '+visitanteConfronto+'</div>' +
+      '<div class="exp-goals">Gols esperados: <strong>'+resultado.expCasa.toFixed(2)+'</strong> x <strong>'+resultado.expFora.toFixed(2)+'</strong></div>' +
+      '<div class="poisson-prob"><span class="num">'+fmtPct(prob)+'</span><span class="num-sub">probabilidade do modelo para "'+mercado.label+'"'+(condicao==='mandante'?' ('+team+' mandante)':' ('+team+' visitante)')+'</span></div>' +
+      confiancaHtml +
+      '<div class="poisson-foot">Amostra do modelo: '+resultado.amostraCasa+' jogos ('+mandanteConfronto+' em casa) · '+resultado.amostraFora+' jogos ('+visitanteConfronto+' fora) · confiança dos dados: '+resultado.confiancaDados+'</div>' +
+    '</div>';
+  }
+
+  function computeContextStats(mercado, windowMatches, condicao){
+    function sideVals(getHome, getAway){
+      var forSum=0, againstSum=0, n=windowMatches.length;
+      windowMatches.forEach(function(m){
+        var forV = condicao==='mandante' ? getHome(m) : getAway(m);
+        var againstV = condicao==='mandante' ? getAway(m) : getHome(m);
+        forSum += (forV||0); againstSum += (againstV||0);
+      });
+      return { mediaFor:(forSum/n).toFixed(2), mediaAgainst:(againstSum/n).toFixed(2) };
+    }
+    var fam = mercado.family;
+    if(fam === 'golsht'){
+      var v1 = sideVals(function(m){return m.hthg;}, function(m){return m.htag;});
+      return { labelFor:'média de gols no 1ºT marcados', mediaFor:v1.mediaFor, labelAgainst:'média de gols no 1ºT sofridos', mediaAgainst:v1.mediaAgainst, extraLabel:null, extraValue:null };
+    }
+    if(fam === 'escanteios'){
+      var v2 = sideVals(function(m){return m.hc;}, function(m){return m.ac;});
+      return { labelFor:'média de escanteios a favor', mediaFor:v2.mediaFor, labelAgainst:'média de escanteios contra', mediaAgainst:v2.mediaAgainst, extraLabel:null, extraValue:null };
+    }
+    if(fam === 'cartoes'){
+      var v3 = sideVals(function(m){return (m.hy||0)+(m.hr||0);}, function(m){return (m.ay||0)+(m.ar||0);});
+      return { labelFor:'média de cartões do time', mediaFor:v3.mediaFor, labelAgainst:'média de cartões do adversário', mediaAgainst:v3.mediaAgainst, extraLabel:null, extraValue:null };
+    }
+    var v4 = sideVals(function(m){return m.hg;}, function(m){return m.ag;});
+    var bttsCount = windowMatches.filter(function(m){ return m.hg>0 && m.ag>0; }).length;
+    return { labelFor:'média de gols marcados por jogo', mediaFor:v4.mediaFor, labelAgainst:'média de gols sofridos por jogo', mediaAgainst:v4.mediaAgainst, extraLabel:'ambas equipes marcaram', extraValue:Math.round(bttsCount/windowMatches.length*100)+'%' };
+  }
+
+  function runAnalysis(team, condicao, mercadoKey, janela, adversario){
+    var mercado = currentLeague.mercados.filter(function(m){ return m.key === mercadoKey; })[0];
+    var all = currentLeague.matches.filter(function(m){
+      var playedAs = condicao === 'mandante' ? m.h === team : m.a === team;
+      if(!playedAs) return false;
+      return mercado.hit(m, condicao) !== null;
+    }).sort(function(a,b){ return b.d.localeCompare(a.d); });
+
+    var windowMatches = all.slice(0, janela);
+    var full = all;
+
+    els.crumbs.innerHTML =
+      '<span class="crumb">'+currentLeague.meta.country+' — '+currentLeague.meta.leagueName+'</span>' +
+      '<span class="crumb"><strong>'+team+'</strong></span>' +
+      '<span class="crumb">'+(condicao==='mandante'?'Mandante':'Visitante')+'</span>' +
+      '<span class="crumb"><strong>'+mercado.label+'</strong></span>' +
+      (adversario ? '<span class="crumb">vs <strong>'+adversario+'</strong></span>' : '');
+
+    if(windowMatches.length === 0){
+      els.dashContent.innerHTML = '<div class="card empty">Sem jogos suficientes no histórico para "'+team+'" como '+(condicao==='mandante'?'mandante':'visitante')+' nesse mercado.</div>';
+    } else {
+      var hits = windowMatches.filter(function(m){ return mercado.hit(m, condicao); });
+      var rate = Math.round((hits.length / windowMatches.length) * 100);
+      var fullHits = full.filter(function(m){ return mercado.hit(m, condicao); });
+      var fullRate = Math.round((fullHits.length / full.length) * 100);
+
+      var confLabel = rate >= 70 ? 'Alta' : rate >= 40 ? 'Média' : 'Baixa';
+      var confClass = rate >= 70 ? 'alta' : rate >= 40 ? 'media' : 'baixa';
+
+      var ctx = computeContextStats(mercado, windowMatches, condicao);
+
+      var chronological = windowMatches.slice().reverse();
+      var maxStreak = 0, curStreak = 0;
+      chronological.forEach(function(m){
+        if(mercado.hit(m, condicao)){ curStreak++; maxStreak = Math.max(maxStreak, curStreak); }
+        else { curStreak = 0; }
+      });
+      var curFromNow = 0;
+      for(var i=0;i<windowMatches.length;i++){
+        if(mercado.hit(windowMatches[i], condicao)) curFromNow++;
+        else break;
+      }
+
+      var fgChips = chronological.map(function(m){
+        var isHit = mercado.hit(m, condicao);
+        var opp = condicao==='mandante' ? m.a : m.h;
+        var title = fmtDate(m.d)+' vs '+opp+' — '+m.hg+'x'+m.ag;
+        return '<div class="fg-chip '+(isHit?'hit':'miss')+'" title="'+title+'">'+(isHit?'✓':'✕')+'</div>';
+      }).join('');
+
+      var rowsHtml = windowMatches.map(function(m){
+        var isHit = mercado.hit(m, condicao);
+        var opp = condicao==='mandante' ? m.a : m.h;
+        var placar = condicao==='mandante' ? (m.hg+' - '+m.ag) : (m.ag+' - '+m.hg);
+        return '<tr>' +
+          '<td>'+fmtDate(m.d)+'</td>' +
+          '<td>'+opp+'</td>' +
+          '<td>'+placar+'</td>' +
+          '<td><span class="res-chip '+(isHit?'hit':'miss')+'">'+(isHit?'✓ Bateu':'✕ Não bateu')+'</span></td>' +
+        '</tr>';
+      }).join('');
+
+      var extraTile = ctx.extraLabel ? '<div class="card stat-tile"><span class="stat-num">'+ctx.extraValue+'</span><span class="stat-label">'+ctx.extraLabel+'</span></div>' : '';
+
+      els.dashContent.innerHTML =
+        '<div class="card hero">' +
+          '<div class="hero-top">' +
+            '<span class="hero-label"><strong>'+team+'</strong> como '+(condicao==='mandante'?'mandante':'visitante')+' · mercado <strong>'+mercado.label+'</strong></span>' +
+            '<span class="badge '+confClass+'" title="Baseado só no retrospecto do time nessa janela — não é validado por backtest">Frequência '+confLabel+'</span>' +
+          '</div>' +
+          '<div class="hero-stat">' +
+            '<span class="num">'+rate+'%</span>' +
+            '<span class="num-sub">bateu em '+hits.length+' dos últimos '+windowMatches.length+' jogos</span>' +
+          '</div>' +
+          '<div class="form-guide">' +
+            '<div class="fg-label"><span>Sequência (mais antigo → mais recente)</span><span>sequência atual: '+curFromNow+'</span></div>' +
+            '<div class="fg-row">'+fgChips+'</div>' +
+          '</div>' +
+        '</div>' +
+
+        renderPoissonCard(team, condicao, mercado, adversario) +
+
+        '<div class="stat-grid">' +
+          '<div class="card stat-tile"><span class="stat-num">'+ctx.mediaFor+'</span><span class="stat-label">'+ctx.labelFor+'</span></div>' +
+          '<div class="card stat-tile"><span class="stat-num">'+ctx.mediaAgainst+'</span><span class="stat-label">'+ctx.labelAgainst+'</span></div>' +
+          extraTile +
+          '<div class="card stat-tile"><span class="stat-num">'+maxStreak+'</span><span class="stat-label">maior sequência de acerto na janela</span></div>' +
+          '<div class="card stat-tile"><span class="stat-num">'+fullRate+'%</span><span class="stat-label">acerto histórico completo ('+full.length+' jogos)</span></div>' +
+        '</div>' +
+
+        '<div class="card">' +
+          '<div class="table-title">Últimos '+windowMatches.length+' jogos</div>' +
+          '<div class="table-wrap"><table><thead><tr><th>Data</th><th>Adversário</th><th>Placar</th><th>Mercado</th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div>' +
+          '<div class="table-foot">Placar sempre na ordem '+team+' × adversário.</div>' +
+        '</div>';
+    }
+
+    if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    els.screenSelect.classList.add('hidden');
+    els.screenDash.classList.add('visible');
+    window.scrollTo(0,0);
+  }
+})();
+</script>
