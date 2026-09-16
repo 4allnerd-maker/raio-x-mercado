@@ -39,9 +39,15 @@
   </div>
 
   <div id="painel-dia">
-    <div class="field" style="max-width:320px;">
-      <label for="sel-data">Data</label>
-      <select id="sel-data"></select>
+    <div class="card form-card" style="flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:16px;">
+      <div class="field" style="flex:1;min-width:220px;">
+        <label for="sel-data">Data</label>
+        <select id="sel-data"></select>
+      </div>
+      <div class="field" style="flex:1;min-width:220px;">
+        <label>Fuso horário</label>
+        <div id="tz-wrap-dia"></div>
+      </div>
     </div>
     <div id="dia-wrap"><p class="status-line">carregando jogos…</p></div>
   </div>
@@ -91,6 +97,7 @@
 </div>
 
 <script src="poisson-model.js"></script>
+<script src="tz.js"></script>
 <script>
 (function(){
   var leagues = null, calibAll = null, fixtures = [];
@@ -111,6 +118,7 @@
     painelMultipla: document.getElementById('painel-multipla'),
     selData: document.getElementById('sel-data'),
     diaWrap: document.getElementById('dia-wrap'),
+    tzWrapDia: document.getElementById('tz-wrap-dia'),
     multData: document.getElementById('mult-data'),
     multMercado: document.getElementById('mult-mercado'),
     multConfianca: document.getElementById('mult-confianca'),
@@ -119,6 +127,20 @@
     multiplaWrap: document.getElementById('multipla-wrap')
   };
 
+  RaioXTz.renderPicker(els.tzWrapDia, function(){ recalcularFixtures(); renderDia(); });
+
+  function recalcularFixtures(){
+    var tz = RaioXTz.getSelected();
+    fixtures.forEach(function(f){
+      var conv = RaioXTz.convertFixture(f.dOrig, f.tOrig, tz);
+      f.d = conv.iso; f.t = conv.time; f.dow = conv.weekday;
+    });
+    var dates = [...new Set(fixtures.map(function(f){return f.d;}))].sort();
+    var dateOptHtml = dates.map(function(d){ return '<option value="'+d+'">'+fmtDate(d, fixtures.filter(function(f){return f.d===d;})[0].dow)+'</option>'; }).join('');
+    els.selData.innerHTML = dateOptHtml || '<option value="">Sem datas disponíveis</option>';
+    els.multData.innerHTML = dateOptHtml || '<option value="">Sem datas disponíveis</option>';
+  }
+
   Promise.all([
     fetch('data/leagues.json', {cache:'no-store'}).then(function(r){return r.json();}),
     fetch('data/calibracao.json', {cache:'no-store'}).then(function(r){return r.json();}),
@@ -126,14 +148,10 @@
   ]).then(function(res){
     leagues = res[0].leagues;
     calibAll = res[1];
-    fixtures = res[2].fixtures;
+    fixtures = res[2].fixtures.map(function(f){ return Object.assign({}, f, { dOrig:f.d, tOrig:f.t }); });
 
-    var dates = [...new Set(fixtures.map(function(f){return f.d;}))].sort();
-    var dateOptHtml = dates.map(function(d){ return '<option value="'+d+'">'+fmtDate(d)+'</option>'; }).join('');
-    els.selData.innerHTML = dateOptHtml || '<option value="">Sem datas disponíveis</option>';
-    els.multData.innerHTML = dateOptHtml || '<option value="">Sem datas disponíveis</option>';
-
-    if(dates.length){ renderDia(); }
+    recalcularFixtures();
+    if(fixtures.length){ renderDia(); }
     else { els.diaWrap.innerHTML = '<div class="card empty">Nenhum jogo futuro disponível na fonte agora.</div>'; }
   });
 
@@ -148,10 +166,8 @@
   });
   els.btnGerar.addEventListener('click', gerarMultipla);
 
-  function fmtDate(iso){
+  function fmtDate(iso, dow){
     var p = iso.split('-');
-    var dias = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
-    var dow = dias[new Date(iso+'T12:00:00Z').getUTCDay()];
     return p[2]+'/'+p[1]+' ('+dow+')';
   }
 
@@ -236,17 +252,39 @@
     return null;
   }
 
-  function melhorMercado(resultado, code, home, away){
+  var PISO_QUALIDADE = 55; // % de acerto real mínimo pra um mercado entrar na lista de candidatos —
+  // sem isso, o diversificador podia forçar uma "Vitória" a 40% de acerto real só pra variar.
+
+  // Devolve TODOS os mercados core com sinal suficiente pra esse jogo (não só o melhor),
+  // ordenados por acerto real — usado pra poder diversificar entre vários jogos do dia.
+  function candidatosDoJogo(resultado, code, home, away){
     var candidatos = [];
     CORE_MARKETS.forEach(function(family){
       var cand = favoredCandidate(resultado, family, home, away);
       if(!cand) return;
       var faixa = lookupCalibracao(code, cand.calibKey, cand.prob);
-      if(!faixa) return;
+      if(!faixa || faixa.taxaAcerto < PISO_QUALIDADE) return;
       candidatos.push({ key:family, label:cand.label, prob:cand.prob, taxaReal:faixa.taxaAcerto, n:faixa.n });
     });
     candidatos.sort(function(a,b){ return b.taxaReal - a.taxaReal || b.prob - a.prob; });
-    return candidatos[0] || null;
+    return candidatos;
+  }
+
+  // Espalha os mercados escolhidos entre os jogos: cada jogo pega, dentre os mercados
+  // válidos pra ele, o que estiver menos usado até agora — pra não travar tudo em "Over 1.5"
+  // só porque esse mercado costuma ter o maior acerto validado.
+  function diversifyPicks(items){
+    var usage = {};
+    return items.map(function(it){
+      if(!it.candidatos.length) return Object.assign({}, it, { pick:null });
+      var escolhido = it.candidatos.slice().sort(function(a,b){
+        var ua = usage[a.key]||0, ub = usage[b.key]||0;
+        if(ua !== ub) return ua - ub;
+        return b.taxaReal - a.taxaReal;
+      })[0];
+      usage[escolhido.key] = (usage[escolhido.key]||0) + 1;
+      return Object.assign({}, it, { pick: escolhido });
+    });
   }
 
   function renderDia(){
@@ -259,19 +297,27 @@
     Promise.all(codes.map(function(c){ return getMatches(c).then(function(m){ return [c,m]; }); })).then(function(pairs){
       var matchesByCode = {};
       pairs.forEach(function(p){ matchesByCode[p[0]] = p[1]; });
-      var cards = jogos.map(function(f){
+
+      var itens = jogos.map(function(f){
         var matches = matchesByCode[f.code];
-        var resultado = PoissonModel.analisarConfronto(matches, f.h, f.a, f.d);
-        var pick = melhorMercado(resultado, f.code, f.h, f.a);
+        var resultado = PoissonModel.analisarConfronto(matches, f.h, f.a, f.dOrig);
+        var candidatos = candidatosDoJogo(resultado, f.code, f.h, f.a);
+        return { f:f, resultado:resultado, candidatos:candidatos };
+      });
+
+      var diversificados = diversifyPicks(itens);
+
+      var cards = diversificados.map(function(it){
+        var f = it.f, resultado = it.resultado, pick = it.pick;
         var meta = leagues.filter(function(l){return l.code===f.code;})[0];
 
         if(!pick){
-          return '<div class="card pick-card"><div class="pick-top"><span class="pick-teams">'+f.h+' x '+f.a+'</span><span class="pick-league">'+meta.country+' — '+meta.leagueName+' · '+(f.t||'')+'</span></div>' +
+          return '<div class="card pick-card"><div class="pick-top"><span class="pick-teams">'+f.h+' x '+f.a+'</span><span class="pick-league">'+meta.country+' — '+meta.leagueName+' · '+f.t+' ('+f.dow+')</span></div>' +
             '<div class="warn-note">Nenhum mercado com sinal validado o suficiente pra esse confronto (amostra baixa ou probabilidade fora das faixas testadas).</div></div>';
         }
 
         return '<div class="card pick-card">' +
-          '<div class="pick-top"><span class="pick-teams">'+f.h+' x '+f.a+'</span><span class="pick-league">'+meta.country+' — '+meta.leagueName+' · '+(f.t||'')+'</span></div>' +
+          '<div class="pick-top"><span class="pick-teams">'+f.h+' x '+f.a+'</span><span class="pick-league">'+meta.country+' — '+meta.leagueName+' · '+f.t+' ('+f.dow+')</span></div>' +
           '<div class="pick-market"><span class="num">'+Math.round(pick.prob*100)+'%</span><span class="lbl">'+pick.label+'</span></div>' +
           '<div class="pick-explain">'+explicacao(resultado, pick.key, f.h, f.a, pick.label)+'</div>' +
           '<div class="pick-foot">Acerto real validado por backtest nessa faixa: '+pick.taxaReal+'% (em '+pick.n+' jogos) · gols esperados '+resultado.expCasa.toFixed(2)+' x '+resultado.expFora.toFixed(2)+'</div>' +
@@ -296,37 +342,36 @@
       var matchesByCode = {};
       pairs.forEach(function(p){ matchesByCode[p[0]] = p[1]; });
 
-      var candidatos = [];
-      jogos.forEach(function(f){
-        var resultado = PoissonModel.analisarConfronto(matchesByCode[f.code], f.h, f.a, f.d);
-        var melhorDoJogo = null;
+      var escolhidos;
 
-        if(mercadoFiltro==='auto'){
-          CORE_MARKETS.forEach(function(family){
-            var fc = favoredCandidate(resultado, family, f.h, f.a);
-            if(!fc) return;
-            var faixa = lookupCalibracao(f.code, fc.calibKey, fc.prob);
-            if(!faixa) return;
-            var taxa = faixa.taxaAcerto/100;
-            if(taxa < confMin) return;
-            var cand = { f:f, key:family, label:fc.label, prob:fc.prob, taxaReal:faixa.taxaAcerto, n:faixa.n };
-            if(!melhorDoJogo || cand.taxaReal > melhorDoJogo.taxaReal) melhorDoJogo = cand;
-          });
-        } else {
-          // mercado travado explicitamente pelo usuário: usa a probabilidade literal desse lado,
-          // mesmo que o modelo prefira o lado oposto (é isso que foi pedido).
+      if(mercadoFiltro==='auto'){
+        // modo automático: monta candidatos por jogo e diversifica os mercados entre os
+        // jogos escolhidos, em vez de sempre bater no mercado de maior acerto isolado.
+        var itens = jogos.map(function(f){
+          var resultado = PoissonModel.analisarConfronto(matchesByCode[f.code], f.h, f.a, f.dOrig);
+          var cands = candidatosDoJogo(resultado, f.code, f.h, f.a).filter(function(c){ return (c.taxaReal/100) >= confMin; });
+          return { f:f, candidatos:cands };
+        });
+        var diversificados = diversifyPicks(itens).filter(function(it){ return it.pick; });
+        var todos = diversificados.map(function(it){ return { f:it.f, key:it.pick.key, label:it.pick.label, prob:it.pick.prob, taxaReal:it.pick.taxaReal, n:it.pick.n }; });
+        todos.sort(function(a,b){ return b.taxaReal - a.taxaReal; });
+        escolhidos = todos.slice(0, n);
+      } else {
+        // mercado travado explicitamente pelo usuário: usa a probabilidade literal desse lado,
+        // mesmo que o modelo prefira o lado oposto (é isso que foi pedido).
+        var candidatos = [];
+        jogos.forEach(function(f){
+          var resultado = PoissonModel.analisarConfronto(matchesByCode[f.code], f.h, f.a, f.dOrig);
           var prob = probParaMercado(resultado, mercadoFiltro);
           var faixa2 = lookupCalibracao(f.code, mercadoFiltro, prob);
           if(faixa2 && (faixa2.taxaAcerto/100) >= confMin){
             var label2 = mercadoFiltro==='vitoria' ? (resultado.prob1x2.H>=resultado.prob1x2.A ? 'Vitória '+f.h : 'Vitória '+f.a) : MERCADO_LABEL[mercadoFiltro];
-            melhorDoJogo = { f:f, key:mercadoFiltro, label:label2, prob:prob, taxaReal:faixa2.taxaAcerto, n:faixa2.n };
+            candidatos.push({ f:f, key:mercadoFiltro, label:label2, prob:prob, taxaReal:faixa2.taxaAcerto, n:faixa2.n });
           }
-        }
-        if(melhorDoJogo) candidatos.push(melhorDoJogo);
-      });
-
-      candidatos.sort(function(a,b){ return b.taxaReal - a.taxaReal; });
-      var escolhidos = candidatos.slice(0, n);
+        });
+        candidatos.sort(function(a,b){ return b.taxaReal - a.taxaReal; });
+        escolhidos = candidatos.slice(0, n);
+      }
 
       if(!escolhidos.length){
         els.multiplaWrap.innerHTML = '<div class="card empty">Nenhum jogo bateu esse critério nessa data. Tenta baixar a confiança mínima ou trocar o mercado.</div>';
@@ -342,7 +387,7 @@
       var cards = escolhidos.map(function(c){
         var lm = meta.filter(function(l){return l.code===c.f.code;})[0];
         return '<div class="card pick-card">' +
-          '<div class="pick-top"><span class="pick-teams">'+c.f.h+' x '+c.f.a+'</span><span class="pick-league">'+lm.country+' — '+lm.leagueName+'</span></div>' +
+          '<div class="pick-top"><span class="pick-teams">'+c.f.h+' x '+c.f.a+'</span><span class="pick-league">'+lm.country+' — '+lm.leagueName+' · '+c.f.t+' ('+c.f.dow+')</span></div>' +
           '<div class="pick-market"><span class="num">'+Math.round(c.prob*100)+'%</span><span class="lbl">'+c.label+'</span></div>' +
           '<div class="pick-foot">Acerto real validado: '+c.taxaReal+'% (em '+c.n+' jogos do backtest)</div>' +
         '</div>';

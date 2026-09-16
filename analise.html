@@ -65,6 +65,36 @@
         </div>
       </div>
 
+      <div class="field">
+        <label for="sel-diasemana">Dia da semana <span class="hint">(opcional)</span></label>
+        <select id="sel-diasemana">
+          <option value="">Qualquer dia</option>
+          <option value="segunda-feira">Segunda-feira</option>
+          <option value="terça-feira">Terça-feira</option>
+          <option value="quarta-feira">Quarta-feira</option>
+          <option value="quinta-feira">Quinta-feira</option>
+          <option value="sexta-feira">Sexta-feira</option>
+          <option value="sábado">Sábado</option>
+          <option value="domingo">Domingo</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="sel-faixahorario">Faixa de horário <span class="hint">(opcional — no fuso escolhido abaixo)</span></label>
+        <select id="sel-faixahorario">
+          <option value="">Qualquer horário</option>
+          <option value="madrugada">Madrugada (00h–06h)</option>
+          <option value="manha">Manhã (06h–12h)</option>
+          <option value="tarde">Tarde (12h–18h)</option>
+          <option value="noite">Noite (18h–24h)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Fuso horário <span class="hint">(usado nos horários mostrados e no filtro de dia/faixa acima)</span></label>
+        <div id="tz-wrap"></div>
+      </div>
+
       <button class="btn-primary" id="btn-analisar" disabled>Analisar mercado →</button>
       <span class="status-line" id="status-line">carregando base de dados…</span>
     </div>
@@ -80,6 +110,7 @@
 </div>
 
 <script src="poisson-model.js"></script>
+<script src="tz.js"></script>
 <script>
 (function(){
   var FAMILY_LABEL = { gols:'Gols', resultado:'Resultado', golsht:'Intervalo (1ºT)', escanteios:'Escanteios', cartoes:'Cartões', reservado:'Em breve' };
@@ -103,6 +134,9 @@
     statusLine: document.getElementById('status-line'),
     segCondicao: document.getElementById('seg-condicao'),
     segJanela: document.getElementById('seg-janela'),
+    diaSemana: document.getElementById('sel-diasemana'),
+    faixaHorario: document.getElementById('sel-faixahorario'),
+    tzWrap: document.getElementById('tz-wrap'),
     screenSelect: document.getElementById('screen-select'),
     screenDash: document.getElementById('screen-dashboard'),
     btnVoltar: document.getElementById('btn-voltar'),
@@ -254,11 +288,13 @@
     state.janela = parseInt(btn.dataset.val, 10);
   });
 
+  RaioXTz.renderPicker(els.tzWrap, function(){});
+
   els.btnAnalisar.addEventListener('click', function(){
     var time = els.time.value;
     var mercadoKey = els.mercado.value;
     var adversario = els.adversario.value;
-    runAnalysis(time, state.condicao, mercadoKey, state.janela, adversario);
+    runAnalysis(time, state.condicao, mercadoKey, state.janela, adversario, els.diaSemana.value, els.faixaHorario.value);
   });
 
   els.btnVoltar.addEventListener('click', function(){
@@ -357,12 +393,32 @@
     return { labelFor:'média de gols marcados por jogo', mediaFor:v4.mediaFor, labelAgainst:'média de gols sofridos por jogo', mediaAgainst:v4.mediaAgainst, extraLabel:'ambas equipes marcaram', extraValue:Math.round(bttsCount/windowMatches.length*100)+'%' };
   }
 
-  function runAnalysis(team, condicao, mercadoKey, janela, adversario){
+  var FAIXA_LABEL = { madrugada:'Madrugada (00h–06h)', manha:'Manhã (06h–12h)', tarde:'Tarde (12h–18h)', noite:'Noite (18h–24h)' };
+
+  function estaNaFaixa(hour, faixa){
+    if(faixa==='madrugada') return hour>=0 && hour<6;
+    if(faixa==='manha') return hour>=6 && hour<12;
+    if(faixa==='tarde') return hour>=12 && hour<18;
+    if(faixa==='noite') return hour>=18 && hour<24;
+    return true;
+  }
+
+  function runAnalysis(team, condicao, mercadoKey, janela, adversario, diaSemana, faixaHorario){
     var mercado = currentLeague.mercados.filter(function(m){ return m.key === mercadoKey; })[0];
+    var tz = RaioXTz.getSelected();
     var all = currentLeague.matches.filter(function(m){
       var playedAs = condicao === 'mandante' ? m.h === team : m.a === team;
       if(!playedAs) return false;
-      return mercado.hit(m, condicao) !== null;
+      if(mercado.hit(m, condicao) === null) return false;
+      if(diaSemana || faixaHorario){
+        var conv = RaioXTz.convertFixture(m.d, m.t || '12:00', tz);
+        if(diaSemana && conv.weekday !== diaSemana) return false;
+        if(faixaHorario){
+          if(!m.t) return false; // sem horário registrado pra esse jogo, não dá pra confirmar a faixa
+          if(!estaNaFaixa(conv.hour, faixaHorario)) return false;
+        }
+      }
+      return true;
     }).sort(function(a,b){ return b.d.localeCompare(a.d); });
 
     var windowMatches = all.slice(0, janela);
@@ -373,10 +429,12 @@
       '<span class="crumb"><strong>'+team+'</strong></span>' +
       '<span class="crumb">'+(condicao==='mandante'?'Mandante':'Visitante')+'</span>' +
       '<span class="crumb"><strong>'+mercado.label+'</strong></span>' +
-      (adversario ? '<span class="crumb">vs <strong>'+adversario+'</strong></span>' : '');
+      (adversario ? '<span class="crumb">vs <strong>'+adversario+'</strong></span>' : '') +
+      (diaSemana ? '<span class="crumb">'+diaSemana+'</span>' : '') +
+      (faixaHorario ? '<span class="crumb">'+FAIXA_LABEL[faixaHorario]+'</span>' : '');
 
     if(windowMatches.length === 0){
-      els.dashContent.innerHTML = '<div class="card empty">Sem jogos suficientes no histórico para "'+team+'" como '+(condicao==='mandante'?'mandante':'visitante')+' nesse mercado.</div>';
+      els.dashContent.innerHTML = '<div class="card empty">Sem jogos suficientes no histórico para "'+team+'" como '+(condicao==='mandante'?'mandante':'visitante')+' nesse mercado'+((diaSemana||faixaHorario)?' com esse filtro de dia/horário':'')+'.</div>';
     } else {
       var hits = windowMatches.filter(function(m){ return mercado.hit(m, condicao); });
       var rate = Math.round((hits.length / windowMatches.length) * 100);

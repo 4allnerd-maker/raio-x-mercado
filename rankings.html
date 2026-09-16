@@ -21,9 +21,10 @@
   <h1>Rankings</h1>
   <p class="lede">Comparativos entre campeonatos e ranking de times por mercado, usando todo o histórico da base.</p>
 
-  <div class="seg" id="seg-modo" style="max-width:420px;">
+  <div class="seg" id="seg-modo" style="max-width:620px;">
     <button type="button" data-val="ligas" class="active">Comparar ligas</button>
     <button type="button" data-val="times">Ranking de times</button>
+    <button type="button" data-val="diahorario">Por dia/horário</button>
   </div>
 
   <div id="painel-ligas">
@@ -75,8 +76,24 @@
     <div id="times-wrap"><p class="status-line">clique em "Ranking de times" pra carregar (baixa dados de 34 ligas, pode levar alguns segundos)…</p></div>
   </div>
 
+  <div id="painel-diahorario" style="display:none;">
+    <div class="card form-card" style="flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:16px;">
+      <div class="field" style="flex:1;min-width:260px;">
+        <label for="dh-campeonato">Campeonato</label>
+        <select id="dh-campeonato"></select>
+      </div>
+      <div class="field" style="flex:1;min-width:220px;">
+        <label>Fuso horário</label>
+        <div id="tz-wrap-dh"></div>
+      </div>
+    </div>
+    <div id="diahorario-wrap"><p class="status-line">selecione um campeonato…</p></div>
+  </div>
+
   <footer>Fonte: histórico público de resultados do football-data.co.uk. Ferramenta de apoio à análise — não é recomendação de aposta. <a href="responsavel.html">Jogue com responsabilidade →</a></footer>
 </div>
+
+<script src="tz.js"></script>
 
 <script>
 (function(){
@@ -88,12 +105,16 @@
     segModo: document.getElementById('seg-modo'),
     painelLigas: document.getElementById('painel-ligas'),
     painelTimes: document.getElementById('painel-times'),
+    painelDiaHorario: document.getElementById('painel-diahorario'),
     metrica: document.getElementById('sel-metrica'),
     ligasWrap: document.getElementById('ligas-wrap'),
     mercado: document.getElementById('sel-mercado'),
     segCondicao: document.getElementById('seg-condicao'),
     segJanela: document.getElementById('seg-janela'),
-    timesWrap: document.getElementById('times-wrap')
+    timesWrap: document.getElementById('times-wrap'),
+    dhCampeonato: document.getElementById('dh-campeonato'),
+    tzWrapDh: document.getElementById('tz-wrap-dh'),
+    diaHorarioWrap: document.getElementById('diahorario-wrap')
   };
 
   var METRICA_LABEL = {
@@ -108,6 +129,15 @@
   fetch('data/leagues.json', {cache:'no-store'}).then(function(r){ return r.json(); }).then(function(d){
     leagues = d.leagues;
     renderLigas();
+
+    var principais = leagues.filter(function(l){ return l.tier==='principal'; });
+    var extras = leagues.filter(function(l){ return l.tier==='extra'; });
+    function opt(l){ return '<option value="'+l.code+'">'+l.country+' — '+l.leagueName+'</option>'; }
+    els.dhCampeonato.innerHTML =
+      '<optgroup label="Ligas principais">' + principais.map(opt).join('') + '</optgroup>' +
+      '<optgroup label="Ligas extras">' + extras.map(opt).join('') + '</optgroup>';
+    var defaultCode = leagues.some(function(l){ return l.code==='BRA'; }) ? 'BRA' : leagues[0].code;
+    els.dhCampeonato.value = defaultCode;
   });
 
   els.metrica.addEventListener('change', function(){ state.metrica = els.metrica.value; renderLigas(); });
@@ -144,8 +174,59 @@
     state.modo = btn.dataset.val;
     els.painelLigas.style.display = state.modo==='ligas' ? '' : 'none';
     els.painelTimes.style.display = state.modo==='times' ? '' : 'none';
+    els.painelDiaHorario.style.display = state.modo==='diahorario' ? '' : 'none';
     if(state.modo==='times' && !teamStatsCache) loadTeamStats();
+    if(state.modo==='diahorario') renderDiaHorario();
   });
+
+  RaioXTz.renderPicker(els.tzWrapDh, function(){ renderDiaHorario(); });
+  els.dhCampeonato.addEventListener('change', renderDiaHorario);
+
+  var dhCache = {};
+  function renderDiaHorario(){
+    var code = els.dhCampeonato.value;
+    if(!code) return;
+    els.diaHorarioWrap.innerHTML = '<p class="status-line">carregando…</p>';
+    var p = dhCache[code] ? Promise.resolve(dhCache[code]) : fetch('data/matches/'+code+'.json', {cache:'no-store'}).then(function(r){return r.json();}).then(function(db){ dhCache[code]=db; return db; });
+    p.then(function(db){
+      var tz = RaioXTz.getSelected();
+      var DIAS = ['segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado','domingo'];
+      var FAIXAS = [['madrugada','Madrugada (00h–06h)'],['manha','Manhã (06h–12h)'],['tarde','Tarde (12h–18h)'],['noite','Noite (18h–24h)']];
+
+      var porDia = {}; DIAS.forEach(function(d){ porDia[d] = { n:0, gols:0 }; });
+      var porFaixa = {}; FAIXAS.forEach(function(f){ porFaixa[f[0]] = { n:0, gols:0 }; });
+
+      db.matches.forEach(function(m){
+        var conv = RaioXTz.convertFixture(m.d, m.t || '12:00', tz);
+        if(porDia[conv.weekday]){ porDia[conv.weekday].n++; porDia[conv.weekday].gols += (m.hg+m.ag); }
+        if(m.t){
+          var h = conv.hour;
+          var faixa = h<6 ? 'madrugada' : h<12 ? 'manha' : h<18 ? 'tarde' : 'noite';
+          porFaixa[faixa].n++; porFaixa[faixa].gols += (m.hg+m.ag);
+        }
+      });
+
+      function barras(rows, maxLabel){
+        var max = Math.max.apply(null, rows.map(function(r){ return r.media; }).concat([0.01]));
+        return rows.map(function(r){
+          var pct = r.n ? Math.max(4, (r.media/max)*100) : 0;
+          return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);">' +
+            '<span style="width:'+maxLabel+'px;font-size:13px;flex-shrink:0;">'+r.label+'</span>' +
+            '<span style="flex:1;background:var(--surface-2);border-radius:6px;height:20px;overflow:hidden;"><span style="display:block;height:100%;width:'+pct+'%;background:var(--accent);border-radius:6px;"></span></span>' +
+            '<span style="width:90px;text-align:right;font-family:JetBrains Mono,monospace;font-weight:600;font-size:13px;">'+(r.n? r.media.toFixed(2)+' ('+r.n+')' : 'sem dados')+'</span>' +
+          '</div>';
+        }).join('');
+      }
+
+      var rowsDia = DIAS.map(function(d){ var s=porDia[d]; return { label:d, n:s.n, media: s.n? s.gols/s.n : 0 }; });
+      var rowsFaixa = FAIXAS.map(function(f){ var s=porFaixa[f[0]]; return { label:f[1], n:s.n, media: s.n? s.gols/s.n : 0 }; });
+
+      els.diaHorarioWrap.innerHTML =
+        '<div class="card" style="padding:18px 20px;margin-bottom:14px;"><div class="table-title" style="padding:0 0 10px;">Média de gols por dia da semana</div>'+barras(rowsDia, 110)+'</div>' +
+        '<div class="card" style="padding:18px 20px;"><div class="table-title" style="padding:0 0 10px;">Média de gols por faixa de horário</div>'+barras(rowsFaixa, 150)+
+        '<div class="table-foot" style="padding:10px 0 0;">Faixas sem contagem de jogos ("sem dados") são jogos sem horário registrado na fonte.</div></div>';
+    });
+  }
 
   els.mercado.addEventListener('change', function(){ state.mercado = els.mercado.value; renderTimes(); });
   els.segCondicao.addEventListener('click', function(e){

@@ -22,30 +22,44 @@
   <p class="lede">Calendário dos próximos confrontos, pra consultar antes de montar suas entradas.</p>
   <div class="rg-banner">⚠️ <span><strong>Cobertura limitada:</strong> nossa fonte gratuita só publica calendário de próximos jogos pras ligas europeias principais, e com poucos dias de antecedência. Brasileirão e as demais ligas "extra" não aparecem aqui ainda — só no retrospecto histórico da <a href="analise.html">Análise</a>.</span></div>
 
-  <div class="field" style="max-width:320px;">
-    <label for="sel-campeonato">Filtrar por campeonato</label>
-    <select id="sel-campeonato"><option value="">Todos os campeonatos</option></select>
+  <div class="card form-card" style="flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:16px;">
+    <div class="field" style="flex:1;min-width:260px;">
+      <label for="sel-campeonato">Filtrar por campeonato</label>
+      <select id="sel-campeonato"><option value="">Todos os campeonatos</option></select>
+    </div>
+    <div class="field" style="flex:1;min-width:220px;">
+      <label>Fuso horário</label>
+      <div id="tz-wrap"></div>
+    </div>
   </div>
 
   <div id="jogos-wrap"><p class="status-line">carregando calendário…</p></div>
 
-  <footer>Fonte: histórico público de resultados do football-data.co.uk. Ferramenta de apoio à análise — não é recomendação de aposta. <a href="responsavel.html">Jogue com responsabilidade →</a></footer>
+  <footer>Fonte: histórico público de resultados do football-data.co.uk, horários convertidos pro fuso selecionado. Ferramenta de apoio à análise — não é recomendação de aposta. <a href="responsavel.html">Jogue com responsabilidade →</a></footer>
 </div>
 
+<script src="tz.js"></script>
 <script>
 (function(){
   var allFixtures = [];
   var els = {
     campeonato: document.getElementById('sel-campeonato'),
-    wrap: document.getElementById('jogos-wrap')
+    wrap: document.getElementById('jogos-wrap'),
+    tzWrap: document.getElementById('tz-wrap')
   };
 
+  RaioXTz.renderPicker(els.tzWrap, function(){ render(); });
+
   fetch('data/fixtures.json', {cache:'no-store'}).then(function(r){ return r.json(); }).then(function(d){
-    allFixtures = d.fixtures.slice().sort(function(a,b){ return a.d.localeCompare(b.d) || (a.t||'').localeCompare(b.t||''); });
+    allFixtures = d.fixtures.map(function(f){
+      var conv = RaioXTz.convertFixture(f.d, f.t);
+      return Object.assign({}, f, { convDate: conv.iso, convTime: conv.time, convDow: conv.weekday });
+    }).sort(function(a,b){ return (a.convDate||'').localeCompare(b.convDate||'') || (a.convTime||'').localeCompare(b.convTime||''); });
+
     var codes = [...new Set(allFixtures.map(function(f){ return f.code; }))];
     var byCode = {};
     allFixtures.forEach(function(f){ byCode[f.code] = f.country+' — '+f.leagueName; });
-    els.campeonato.innerHTML += codes.map(function(c){ return '<option value="'+c+'">'+byCode[c]+'</option>'; }).join('');
+    els.campeonato.innerHTML = '<option value="">Todos os campeonatos</option>' + codes.map(function(c){ return '<option value="'+c+'">'+byCode[c]+'</option>'; }).join('');
     render();
   }).catch(function(){
     els.wrap.innerHTML = '<div class="card empty">Não consegui carregar o calendário agora.</div>';
@@ -53,16 +67,15 @@
 
   els.campeonato.addEventListener('change', render);
 
-  function fmtDate(iso){
-    var p = iso.split('-');
-    var dias = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
-    var dow = dias[new Date(iso+'T12:00:00Z').getUTCDay()];
-    return p[2]+'/'+p[1]+' ('+dow+')';
-  }
-
   function render(){
+    var tz = RaioXTz.getSelected();
+    var recalculado = allFixtures.map(function(f){
+      var conv = RaioXTz.convertFixture(f.d, f.t, tz);
+      return Object.assign({}, f, { convDate: conv.iso, convTime: conv.time, convDow: conv.weekday });
+    });
+
     var filtro = els.campeonato.value;
-    var list = filtro ? allFixtures.filter(function(f){ return f.code===filtro; }) : allFixtures;
+    var list = filtro ? recalculado.filter(function(f){ return f.code===filtro; }) : recalculado;
 
     if(!list.length){
       els.wrap.innerHTML = '<div class="card empty">Nenhum jogo futuro disponível nessa fonte agora — tenta de novo mais perto da rodada.</div>';
@@ -72,23 +85,26 @@
     var groups = {};
     var order = [];
     list.forEach(function(f){
-      if(!groups[f.d]){ groups[f.d] = []; order.push(f.d); }
-      groups[f.d].push(f);
+      if(!groups[f.convDate]){ groups[f.convDate] = []; order.push(f.convDate); }
+      groups[f.convDate].push(f);
     });
+    order.sort();
 
     els.wrap.innerHTML = order.map(function(d){
       var rows = groups[d].map(function(f){
         var linkA = 'analise.html?campeonato='+encodeURIComponent(f.code)+'&time='+encodeURIComponent(f.h)+'&condicao=mandante&adversario='+encodeURIComponent(f.a);
         return '<tr>' +
-          '<td>'+(f.t||'-')+'</td>' +
+          '<td>'+(f.convTime||'-')+'</td>' +
           '<td>'+f.country+' — '+f.leagueName+'</td>' +
           '<td>'+f.h+' x '+f.a+'</td>' +
           '<td>'+(f.oddsH ? f.oddsH.toFixed(2)+' / '+f.oddsD.toFixed(2)+' / '+f.oddsA.toFixed(2) : '-')+'</td>' +
           '<td><a class="btn-ghost" href="'+linkA+'">Analisar →</a></td>' +
         '</tr>';
       }).join('');
+      var dow = groups[d][0].convDow || '';
+      var p = d.split('-');
       return '<div class="card" style="margin-bottom:14px;">' +
-        '<div class="table-title">'+fmtDate(d)+'</div>' +
+        '<div class="table-title">'+p[2]+'/'+p[1]+' ('+dow+')</div>' +
         '<div class="table-wrap"><table><thead><tr><th>Hora</th><th>Campeonato</th><th>Jogo</th><th>Odds (C/E/F)</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>' +
       '</div>';
     }).join('');
