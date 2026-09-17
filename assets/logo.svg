@@ -1,0 +1,13 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Raio-X do Mercado">
+  <circle cx="100" cy="98" r="86" fill="#1C8A4F"/>
+  <g fill="none" stroke="#0B3B22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="100,68 128.5,88.7 117.6,122.3 82.4,122.3 71.5,88.7"/>
+    <path d="M100,68 L100,12"/>
+    <path d="M128.5,88.7 L181.8,71.4"/>
+    <path d="M117.6,122.3 L150.6,167.6"/>
+    <path d="M82.4,122.3 L49.4,167.6"/>
+    <path d="M71.5,88.7 L18.2,71.4"/>
+  </g>
+  <polygon points="132,6 88,96 114,96 70,188 152,80 122,80"
+    fill="#E7BD4E" stroke="#7A5A14" stroke-width="4" stroke-linejoin="round"/>
+</svg>

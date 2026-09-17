@@ -3,6 +3,9 @@
 // Gera data/leagues.json (catálogo) e data/matches/{code}.json (por liga).
 const fs = require('fs');
 const path = require('path');
+const { execFile } = require('child_process');
+const { promisify } = require('util');
+const execFileP = promisify(execFile);
 
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const MATCHES_DIR = path.join(DATA_DIR, 'matches');
@@ -77,15 +80,28 @@ const MAX_ATTEMPTS = 2; // 1 retry só — em outage total isso ainda teria que 
 
 const failureReasons = {}; // pra diagnosticar no log por que algo falhou (timeout? 403? DNS?)
 
+// Usa o binário curl em vez das APIs de rede do Node: tanto fetch() (undici)
+// quanto o módulo https clássico deram ECONNREFUSED de forma consistente pra
+// esse domínio especificamente (local e na CI), enquanto curl nunca falhou em
+// nenhum teste — inclusive rodando as mesmas ~190 requisições em sequência.
+// curl está sempre disponível nos runners do GitHub Actions e no Windows atual.
+function curlGetBuffer(url) {
+  const args = [
+    '-sL', // silencioso, segue redirect
+    '--max-time', String(Math.ceil(REQUEST_TIMEOUT_MS / 1000)),
+    '-A', FETCH_HEADERS['User-Agent'],
+    '-H', `Accept: ${FETCH_HEADERS['Accept']}`,
+    '-H', `Accept-Language: ${FETCH_HEADERS['Accept-Language']}`,
+    '-H', `Referer: ${FETCH_HEADERS['Referer']}`,
+    '--fail', // sai com erro em status HTTP >= 400, em vez de baixar a página de erro
+    url,
+  ];
+  return execFileP('curl', args, { encoding: 'buffer', maxBuffer: 50 * 1024 * 1024 }).then((r) => r.stdout);
+}
+
 async function downloadCsv(url, attempt = 1) {
   try {
-    const res = await fetch(url, { headers: FETCH_HEADERS, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
-    if (!res.ok) {
-      failureReasons[`HTTP ${res.status}`] = (failureReasons[`HTTP ${res.status}`] || 0) + 1;
-      if (attempt < MAX_ATTEMPTS) { await sleep(1500 * attempt); return downloadCsv(url, attempt + 1); }
-      return null;
-    }
-    const buf = Buffer.from(await res.arrayBuffer());
+    const buf = await curlGetBuffer(url);
     if (!buf.length) return null;
     let text = buf.toString('utf8');
     if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
@@ -100,7 +116,7 @@ async function downloadCsv(url, attempt = 1) {
     });
     return rows;
   } catch (e) {
-    const reason = e.name === 'TimeoutError' || e.name === 'AbortError' ? 'timeout' : (e.cause && e.cause.code) || e.message;
+    const reason = typeof e.code === 'number' ? `curl exit ${e.code}` : (e.code || e.message || 'erro desconhecido');
     failureReasons[reason] = (failureReasons[reason] || 0) + 1;
     if (attempt < MAX_ATTEMPTS) { await sleep(1500 * attempt); return downloadCsv(url, attempt + 1); }
     return null;
@@ -146,18 +162,22 @@ function normalizeExtra(rows, code) {
   })).filter((m) => m.d && m.h && m.a && m.hg !== null && m.ag !== null);
 }
 
+const INTER_REQUEST_DELAY_MS = 500; // disparar ~180 requisições sem pausa dispara rate-limit/bloqueio da fonte
+
 async function fetchMainLeague(code) {
   const seasons = seasonCodes(N_SEASONS_MAIN - 1);
   let all = [];
   for (const season of seasons) {
     const rows = await downloadCsv(MAIN_URL_TMPL(season, code));
     if (rows) all = all.concat(normalizeMain(rows, code, season));
+    await sleep(INTER_REQUEST_DELAY_MS);
   }
   return all;
 }
 
 async function fetchExtraLeague(code) {
   const rows = await downloadCsv(EXTRA_URL_TMPL(code));
+  await sleep(INTER_REQUEST_DELAY_MS);
   if (!rows) return null;
   const all = normalizeExtra(rows, code);
   const seasons = [...new Set(all.map((m) => m.season))].sort();
