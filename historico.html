@@ -1,0 +1,145 @@
+<title>Histórico — Raio-X do Mercado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+<nav class="topnav">
+  <a href="index.html" class="topnav-brand">Raio-X ⚽ Mercado</a>
+  <div class="topnav-links">
+    <a href="index.html">Início</a>
+    <a href="analise.html">Análise</a>
+    <a href="classificacao.html">Classificação</a>
+    <a href="historico.html" class="active">Histórico</a>
+    <a href="calendario.html">Próximos Jogos</a>
+    <a href="rankings.html">Rankings</a>
+    <a href="sinais.html">Sinais</a>
+    <a href="responsavel.html">Jogo Responsável</a>
+  </div>
+</nav>
+
+<div class="wrap wide">
+  <h1>Histórico de jogos</h1>
+  <p class="lede">Todos os resultados da nossa base, filtrados por campeonato e temporada.</p>
+
+  <div class="card form-card" style="flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:16px;">
+    <div class="field" style="flex:1;min-width:240px;">
+      <label for="sel-campeonato">Campeonato</label>
+      <select id="sel-campeonato"><option value="">Carregando…</option></select>
+    </div>
+    <div class="field" style="flex:1;min-width:160px;">
+      <label for="sel-temporada">Temporada</label>
+      <select id="sel-temporada"></select>
+    </div>
+    <div class="field" style="flex:1;min-width:200px;">
+      <label for="input-time">Time <span class="hint">(opcional)</span></label>
+      <input type="text" id="input-time" list="lista-times" placeholder="Todos os times" autocomplete="off"
+        style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;">
+      <datalist id="lista-times"></datalist>
+    </div>
+    <div class="field" style="flex:1;min-width:200px;">
+      <label>Ordem</label>
+      <div class="seg small" id="seg-ordem">
+        <button type="button" data-val="desc" class="active">Mais recente → mais antigo</button>
+        <button type="button" data-val="asc">Mais antigo → mais recente</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tabela-wrap"><p class="status-line">carregando…</p></div>
+
+  <footer>Fonte: histórico público de resultados do football-data.co.uk. Ferramenta de apoio à análise — não é recomendação de aposta. <a href="responsavel.html">Jogue com responsabilidade →</a></footer>
+</div>
+
+<script>
+(function(){
+  var leagues = null;
+  var leagueCache = {};
+  var state = { code:null, season:'', time:'', ordem:'desc' };
+
+  var els = {
+    campeonato: document.getElementById('sel-campeonato'),
+    temporada: document.getElementById('sel-temporada'),
+    inputTime: document.getElementById('input-time'),
+    listaTimes: document.getElementById('lista-times'),
+    segOrdem: document.getElementById('seg-ordem'),
+    tabelaWrap: document.getElementById('tabela-wrap')
+  };
+
+  fetch('data/leagues.json', {cache:'no-store'}).then(function(r){ return r.json(); }).then(function(d){
+    leagues = d.leagues;
+    var principais = leagues.filter(function(l){ return l.tier==='principal'; });
+    var extras = leagues.filter(function(l){ return l.tier==='extra'; });
+    function opt(l){ return '<option value="'+l.code+'">'+l.country+' — '+l.leagueName+'</option>'; }
+    els.campeonato.innerHTML =
+      '<optgroup label="Ligas principais">' + principais.map(opt).join('') + '</optgroup>' +
+      '<optgroup label="Ligas extras">' + extras.map(opt).join('') + '</optgroup>';
+    var defaultCode = leagues.some(function(l){ return l.code==='BRA'; }) ? 'BRA' : leagues[0].code;
+    els.campeonato.value = defaultCode;
+    loadLeague(defaultCode);
+  });
+
+  function seasonLabel(s){
+    if(/^\d{4}$/.test(s)) return s;
+    return '20'+s.slice(0,2)+'/'+s.slice(2);
+  }
+
+  function loadLeague(code){
+    state.code = code;
+    var meta = leagues.filter(function(l){ return l.code===code; })[0];
+    els.temporada.innerHTML = '<option value="">Todas as temporadas</option>' +
+      meta.seasons.slice().reverse().map(function(s){ return '<option value="'+s+'">'+seasonLabel(s)+'</option>'; }).join('');
+    state.season = meta.seasons[meta.seasons.length-1];
+    els.temporada.value = state.season;
+
+    var p = leagueCache[code] ? Promise.resolve(leagueCache[code]) : fetch('data/matches/'+code+'.json', {cache:'no-store'}).then(function(r){return r.json();}).then(function(db){ leagueCache[code]=db; return db; });
+    p.then(function(db){
+      els.listaTimes.innerHTML = db.teams.map(function(t){ return '<option value="'+t+'">'; }).join('');
+      render(db);
+    });
+  }
+
+  els.campeonato.addEventListener('change', function(){ els.inputTime.value=''; state.time=''; loadLeague(els.campeonato.value); });
+  els.temporada.addEventListener('change', function(){ state.season = els.temporada.value; render(leagueCache[state.code]); });
+  els.inputTime.addEventListener('input', function(){ state.time = els.inputTime.value.trim(); render(leagueCache[state.code]); });
+  els.segOrdem.addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if(!btn) return;
+    Array.prototype.forEach.call(els.segOrdem.children, function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    state.ordem = btn.dataset.val;
+    render(leagueCache[state.code]);
+  });
+
+  function fmtDate(iso){ var p=iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+
+  function render(db){
+    if(!db) return;
+    var matches = db.matches.filter(function(m){
+      if(state.season && m.season !== state.season) return false;
+      if(state.time && m.h !== state.time && m.a !== state.time) return false;
+      return true;
+    }).sort(function(a,b){
+      var cmp = a.d.localeCompare(b.d) || (a.t||'').localeCompare(b.t||'');
+      return state.ordem === 'asc' ? cmp : -cmp;
+    });
+
+    if(!matches.length){
+      els.tabelaWrap.innerHTML = '<div class="card empty">Nenhum jogo encontrado com esses filtros.</div>';
+      return;
+    }
+
+    var maxRows = 2000;
+    var shown = matches.slice(0, maxRows);
+    var body = shown.map(function(m){
+      return '<tr><td>'+fmtDate(m.d)+'</td><td>'+m.h+'</td><td style="text-align:center;font-weight:600;">'+m.hg+' - '+m.ag+'</td><td>'+m.a+'</td><td>'+seasonLabel(m.season)+'</td></tr>';
+    }).join('');
+
+    var aviso = matches.length > maxRows ? '<div class="table-foot">Mostrando os '+maxRows+' primeiros de '+matches.length+' jogos — refine o filtro (temporada ou time) pra ver os demais.</div>' : '';
+
+    els.tabelaWrap.innerHTML = '<div class="card"><div class="table-wrap"><table>' +
+      '<thead><tr><th>Data</th><th>Mandante</th><th>Placar</th><th>Visitante</th><th>Temporada</th></tr></thead>' +
+      '<tbody>'+body+'</tbody></table></div><div class="table-foot">'+matches.length+' jogos encontrados</div>'+aviso+'</div>';
+  }
+})();
+</script>
