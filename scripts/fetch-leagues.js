@@ -70,11 +70,17 @@ const FETCH_HEADERS = {
 
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
+const REQUEST_TIMEOUT_MS = 10000; // falha rápido em vez de travar numa conexão pendurada
+const MAX_ATTEMPTS = 2; // 1 retry só — em outage total isso ainda teria que passar por ~180 arquivos
+
+const failureReasons = {}; // pra diagnosticar no log por que algo falhou (timeout? 403? DNS?)
+
 async function downloadCsv(url, attempt = 1) {
   try {
-    const res = await fetch(url, { headers: FETCH_HEADERS });
+    const res = await fetch(url, { headers: FETCH_HEADERS, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
     if (!res.ok) {
-      if (attempt < 3) { await sleep(1500 * attempt); return downloadCsv(url, attempt + 1); }
+      failureReasons[`HTTP ${res.status}`] = (failureReasons[`HTTP ${res.status}`] || 0) + 1;
+      if (attempt < MAX_ATTEMPTS) { await sleep(1500 * attempt); return downloadCsv(url, attempt + 1); }
       return null;
     }
     const buf = Buffer.from(await res.arrayBuffer());
@@ -92,7 +98,9 @@ async function downloadCsv(url, attempt = 1) {
     });
     return rows;
   } catch (e) {
-    if (attempt < 3) { await sleep(1500 * attempt); return downloadCsv(url, attempt + 1); }
+    const reason = e.name === 'TimeoutError' || e.name === 'AbortError' ? 'timeout' : (e.cause && e.cause.code) || e.message;
+    failureReasons[reason] = (failureReasons[reason] || 0) + 1;
+    if (attempt < MAX_ATTEMPTS) { await sleep(1500 * attempt); return downloadCsv(url, attempt + 1); }
     return null;
   }
 }
@@ -289,6 +297,9 @@ async function main() {
   }, null, 2));
 
   console.log(`\nConcluído: ${statusOk.length} ligas ok, ${statusFail.length} indisponíveis (${statusFail.join(', ')})`);
+  if (Object.keys(failureReasons).length) {
+    console.log('Motivos de falha nas requisições:', JSON.stringify(failureReasons));
+  }
 }
 
 main();
