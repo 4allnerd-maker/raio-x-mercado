@@ -88,6 +88,7 @@ const failureReasons = {}; // pra diagnosticar no log por que algo falhou (timeo
 function curlGetBuffer(url) {
   const args = [
     '-sL', // silencioso, segue redirect
+    '-4', // força IPv4 — "curl exit 7" batendo em ~3.3s por requisição indica IPv6 mal roteado no runner
     '--max-time', String(Math.ceil(REQUEST_TIMEOUT_MS / 1000)),
     '-A', FETCH_HEADERS['User-Agent'],
     '-H', `Accept: ${FETCH_HEADERS['Accept']}`,
