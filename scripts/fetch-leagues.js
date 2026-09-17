@@ -66,6 +66,8 @@ function seasonCodes(nPrevious, d = new Date()) {
 const FETCH_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
   'Accept': 'text/csv,*/*',
+  'Accept-Language': 'en-US,en;q=0.9,pt-BR;q=0.8',
+  'Referer': 'https://www.football-data.co.uk/data.php',
 };
 
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
@@ -276,6 +278,7 @@ async function main() {
   }
   if (statusOk.length === 0) {
     console.error('\nERRO: nenhuma liga foi baixada com sucesso (fonte fora do ar ou bloqueando essa rede?). Abortando sem alterar os dados.');
+    if (Object.keys(failureReasons).length) console.error('Motivos de falha nas requisições:', JSON.stringify(failureReasons));
     process.exit(1);
   }
 
