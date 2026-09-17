@@ -63,10 +63,20 @@ function seasonCodes(nPrevious, d = new Date()) {
   return out;
 }
 
-async function downloadCsv(url) {
+const FETCH_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Accept': 'text/csv,*/*',
+};
+
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
+async function downloadCsv(url, attempt = 1) {
   try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
+    const res = await fetch(url, { headers: FETCH_HEADERS });
+    if (!res.ok) {
+      if (attempt < 3) { await sleep(1500 * attempt); return downloadCsv(url, attempt + 1); }
+      return null;
+    }
     const buf = Buffer.from(await res.arrayBuffer());
     if (!buf.length) return null;
     let text = buf.toString('utf8');
@@ -82,6 +92,7 @@ async function downloadCsv(url) {
     });
     return rows;
   } catch (e) {
+    if (attempt < 3) { await sleep(1500 * attempt); return downloadCsv(url, attempt + 1); }
     return null;
   }
 }
@@ -184,15 +195,42 @@ async function fetchFixtures() {
   }).filter(Boolean);
 }
 
+// Protege contra fonte instável/bloqueada devolvendo um CSV vazio ou truncado:
+// só sobrescreve o arquivo de uma liga se o resultado novo não for muito menor
+// que o que já está salvo (o que indicaria falha parcial, não dado real).
+function existingMatchCount(code) {
+  const file = path.join(MATCHES_DIR, `${code}.json`);
+  if (!fs.existsSync(file)) return 0;
+  try { return JSON.parse(fs.readFileSync(file, 'utf8')).matches.length; } catch (e) { return 0; }
+}
+
+function loadOldCatalog() {
+  const file = path.join(DATA_DIR, 'leagues.json');
+  if (!fs.existsSync(file)) return {};
+  try {
+    const byCode = {};
+    JSON.parse(fs.readFileSync(file, 'utf8')).leagues.forEach((l) => { byCode[l.code] = l; });
+    return byCode;
+  } catch (e) { return {}; }
+}
+
 async function main() {
+  const oldCatalog = loadOldCatalog();
   const catalog = [];
   const statusOk = [], statusFail = [];
+
+  function handleFailure(code) {
+    statusFail.push(code);
+    if (oldCatalog[code]) { catalog.push(oldCatalog[code]); console.log('falhou (mantendo entrada anterior no catálogo)'); }
+    else console.log('falhou (sem entrada anterior pra manter)');
+  }
 
   for (const code of Object.keys(MAIN_LEAGUES)) {
     const [country, leagueName] = MAIN_LEAGUES[code];
     process.stdout.write(`Baixando ${code} (${country} - ${leagueName})... `);
     const matches = await fetchMainLeague(code);
-    if (!matches.length) { console.log('falhou'); statusFail.push(code); continue; }
+    const previous = existingMatchCount(code);
+    if (!matches.length || matches.length < previous * 0.5) { handleFailure(code); continue; }
     const teams = [...new Set(matches.flatMap((m) => [m.h, m.a]))].sort();
     fs.writeFileSync(path.join(MATCHES_DIR, `${code}.json`), JSON.stringify({ matches, teams }));
     catalog.push({
@@ -209,7 +247,8 @@ async function main() {
     const [country, leagueName] = EXTRA_LEAGUES[code];
     process.stdout.write(`Baixando ${code} (${country} - ${leagueName})... `);
     const matches = await fetchExtraLeague(code);
-    if (!matches || !matches.length) { console.log('indisponível'); statusFail.push(code); continue; }
+    const previous = existingMatchCount(code);
+    if (!matches || !matches.length || matches.length < previous * 0.5) { handleFailure(code); continue; }
     const teams = [...new Set(matches.flatMap((m) => [m.h, m.a]))].sort();
     fs.writeFileSync(path.join(MATCHES_DIR, `${code}.json`), JSON.stringify({ matches, teams }));
     catalog.push({
@@ -222,10 +261,26 @@ async function main() {
     console.log(`ok (${matches.length} jogos)`);
   }
 
+  // Trava de segurança: se a fonte estiver fora do ar / bloqueando (ex.: IP da
+  // CI bloqueado), aborta sem escrever nada em vez de publicar um catálogo vazio.
+  if (statusOk.length < Object.keys(MAIN_LEAGUES).length + Object.keys(EXTRA_LEAGUES).length) {
+    console.log(`\nAVISO: só ${statusOk.length} de ${Object.keys(MAIN_LEAGUES).length + Object.keys(EXTRA_LEAGUES).length} ligas atualizaram (${statusFail.join(', ')}) — mantendo dado anterior pra essas.`);
+  }
+  if (statusOk.length === 0) {
+    console.error('\nERRO: nenhuma liga foi baixada com sucesso (fonte fora do ar ou bloqueando essa rede?). Abortando sem alterar os dados.');
+    process.exit(1);
+  }
+
   process.stdout.write('Baixando calendário de próximos jogos (ligas principais)... ');
   const fixtures = await fetchFixtures();
-  fs.writeFileSync(path.join(DATA_DIR, 'fixtures.json'), JSON.stringify({ updatedAt: new Date().toISOString(), fixtures }));
-  console.log(`ok (${fixtures.length} jogos futuros)`);
+  const oldFixturesFile = path.join(DATA_DIR, 'fixtures.json');
+  const oldFixturesCount = fs.existsSync(oldFixturesFile) ? (JSON.parse(fs.readFileSync(oldFixturesFile, 'utf8')).fixtures || []).length : 0;
+  if (fixtures.length > 0 || oldFixturesCount === 0) {
+    fs.writeFileSync(oldFixturesFile, JSON.stringify({ updatedAt: new Date().toISOString(), fixtures }));
+    console.log(`ok (${fixtures.length} jogos futuros)`);
+  } else {
+    console.log(`0 jogos futuros — mantendo calendário anterior (${oldFixturesCount} jogos) pra não apagar um calendário válido por uma falha pontual`);
+  }
 
   catalog.sort((a, b) => (a.tier === b.tier ? a.country.localeCompare(b.country) : a.tier === 'principal' ? -1 : 1));
   fs.writeFileSync(path.join(DATA_DIR, 'leagues.json'), JSON.stringify({
