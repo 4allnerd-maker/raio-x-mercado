@@ -53,6 +53,13 @@
       </div>
 
       <div class="field">
+        <label for="inp-horario">Horário do jogo <span class="hint">(opcional — aparece no card de compartilhar, pra usar como pré-live)</span></label>
+        <input type="text" id="inp-horario" placeholder="ex: domingo 21/09 às 16h00 (Brasília)" autocomplete="off"
+          style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;">
+        <span class="hint" id="horario-hint"></span>
+      </div>
+
+      <div class="field">
         <label for="sel-mercado">Mercado</label>
         <select id="sel-mercado"></select>
       </div>
@@ -137,15 +144,19 @@
 
   var leagues = null;      // catálogo data/leagues.json .leagues
   var calibAll = null;     // data/calibracao.json (por código de liga)
+  var fixturesAll = [];    // data/fixtures.json .fixtures (só ligas principais)
   var leagueCache = {};    // code -> {matches, teams}
   var currentLeague = null; // {code, meta, matches, teams, mercados}
   var state = { condicao:'mandante', janela:10 };
+  var TZ_SHORT = { 'America/Sao_Paulo':'Brasília', 'America/Manaus':'Amazonas', 'America/Rio_Branco':'Acre', 'America/Noronha':'Fernando de Noronha', 'Europe/London':'Reino Unido' };
 
   var els = {
     campeonato: document.getElementById('sel-campeonato'),
     campeonatoHint: document.getElementById('campeonato-hint'),
     time: document.getElementById('sel-time'),
     adversario: document.getElementById('sel-adversario'),
+    horario: document.getElementById('inp-horario'),
+    horarioHint: document.getElementById('horario-hint'),
     mercado: document.getElementById('sel-mercado'),
     btnAnalisar: document.getElementById('btn-analisar'),
     statusLine: document.getElementById('status-line'),
@@ -217,10 +228,12 @@
 
   Promise.all([
     fetchJson('data/leagues.json'),
-    fetchJson('data/calibracao.json').catch(function(){ return {}; })
+    fetchJson('data/calibracao.json').catch(function(){ return {}; }),
+    fetchJson('data/fixtures.json').catch(function(){ return {fixtures:[]}; })
   ]).then(function(results){
     leagues = results[0].leagues;
     calibAll = results[1];
+    fixturesAll = results[2].fixtures || [];
 
     var principais = leagues.filter(function(l){ return l.tier === 'principal'; });
     var extras = leagues.filter(function(l){ return l.tier === 'extra'; });
@@ -289,9 +302,28 @@
     });
   }
 
+  function tentarAutoHorario(){
+    var team = els.time.value, adv = els.adversario.value;
+    if(!team || !adv || !currentLeague){ els.horarioHint.textContent = ''; return; }
+    var tz = RaioXTz.getSelected();
+    var fx = fixturesAll.filter(function(f){
+      return f.code === currentLeague.code && ((f.h===team && f.a===adv) || (f.h===adv && f.a===team));
+    })[0];
+    if(!fx){ els.horarioHint.textContent = ''; return; }
+    var conv = RaioXTz.convertFixture(fx.d, fx.t || '12:00', tz);
+    var texto = conv.weekday.charAt(0).toUpperCase()+conv.weekday.slice(1)+' '+conv.date+' às '+conv.time+' ('+(TZ_SHORT[tz]||tz)+')';
+    if(!els.horario.value){ els.horario.value = texto; }
+    els.horarioHint.textContent = 'Encontramos esse confronto nos próximos jogos: ' + texto + '.';
+  }
+
   els.campeonato.addEventListener('change', function(){
+    els.horario.value = '';
+    els.horarioHint.textContent = '';
     loadLeague(els.campeonato.value);
   });
+
+  els.time.addEventListener('change', tentarAutoHorario);
+  els.adversario.addEventListener('change', tentarAutoHorario);
 
   els.segCondicao.addEventListener('click', function(e){
     var btn = e.target.closest('button');
@@ -315,7 +347,7 @@
     var time = els.time.value;
     var mercadoKey = els.mercado.value;
     var adversario = els.adversario.value;
-    runAnalysis(time, state.condicao, mercadoKey, state.janela, adversario, els.diaSemana.value, els.faixaHorario.value);
+    runAnalysis(time, state.condicao, mercadoKey, state.janela, adversario, els.diaSemana.value, els.faixaHorario.value, els.horario.value.trim());
   });
 
   els.btnVoltar.addEventListener('click', function(){
@@ -463,7 +495,7 @@
     return true;
   }
 
-  function runAnalysis(team, condicao, mercadoKey, janela, adversario, diaSemana, faixaHorario){
+  function runAnalysis(team, condicao, mercadoKey, janela, adversario, diaSemana, faixaHorario, horarioJogo){
     lastPoissonForCard = null;
     lastCardData = null;
     var mercado = currentLeague.mercados.filter(function(m){ return m.key === mercadoKey; })[0];
@@ -588,7 +620,8 @@
         fullRate: fullRate,
         fullN: full.length,
         poisson: lastPoissonForCard,
-        motivo: (lastPoissonForCard && lastPoissonForCard.motivo) ? lastPoissonForCard.motivo : motivoDescritivo
+        motivo: (lastPoissonForCard && lastPoissonForCard.motivo) ? lastPoissonForCard.motivo : motivoDescritivo,
+        horario: horarioJogo || null
       };
       els.btnCompartilhar.hidden = false;
     }
@@ -637,7 +670,7 @@
       (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve()
     ]).then(function(res){
       var logo = res[0];
-      var W = 1080, H = 1500;
+      var W = 1080, H = 1560;
       var canvas = document.createElement('canvas');
       canvas.width = W; canvas.height = H;
       var ctx = canvas.getContext('2d');
@@ -675,6 +708,20 @@
       ctx.fillStyle = '#93A69B';
       ctx.font = "500 26px Inter, sans-serif";
       ctx.fillText(lastCardData.condicao + (lastCardData.adversario ? '  ·  vs ' + lastCardData.adversario : ''), pad, y);
+
+      if(lastCardData.horario){
+        y += 52;
+        ctx.fillStyle = '#0D1512';
+        var horarioTxt = '⏰ ' + lastCardData.horario;
+        ctx.font = "600 27px Inter, sans-serif";
+        var horarioW = ctx.measureText(horarioTxt).width;
+        ctx.fillStyle = '#3FC57C';
+        ctx.beginPath();
+        ctx.roundRect(pad, y - 34, horarioW + 28, 46, 10);
+        ctx.fill();
+        ctx.fillStyle = '#0D1512';
+        ctx.fillText(horarioTxt, pad + 14, y - 2);
+      }
 
       y += 60;
       ctx.fillStyle = '#E3B84D';
