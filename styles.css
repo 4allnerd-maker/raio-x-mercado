@@ -189,7 +189,8 @@ select:focus-visible, .seg button:focus-visible, .btn-primary:focus-visible, .bt
 }
 .badge.alta{background:var(--good-bg);color:var(--good);}
 .badge.media{background:#F6EFD9;color:#8A6A16;}
-:root[data-theme="dark"] .badge.media, @media (prefers-color-scheme:dark){ .badge.media{background:#3A2F14;color:var(--accent-2);} }
+:root[data-theme="dark"] .badge.media{background:#3A2F14;color:var(--accent-2);}
+@media (prefers-color-scheme:dark){ .badge.media{background:#3A2F14;color:var(--accent-2);} }
 .badge.baixa{background:var(--bad-bg);color:var(--bad);}
 
 .hero-stat{display:flex;align-items:baseline;gap:14px;}
@@ -256,6 +257,18 @@ tbody tr.highlight td{background:var(--good-bg);}
   background:var(--surface-2);border:1px solid var(--border);font-size:12.5px;color:var(--text-muted);line-height:1.5;
 }
 .rg-banner strong{color:var(--text);}
+
+.wip-banner{
+  display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:12px;
+  background:#F6EFD9;border:1px solid #E3B84D;font-size:12.5px;color:#8A6A16;line-height:1.5;
+}
+.wip-banner strong{color:#6B4F0F;}
+:root[data-theme="dark"] .wip-banner{background:#3A2F14;border-color:#7A5A14;color:var(--accent-2);}
+:root[data-theme="dark"] .wip-banner strong{color:var(--accent-2);}
+@media (prefers-color-scheme:dark){
+  .wip-banner{background:#3A2F14;border-color:#7A5A14;color:var(--accent-2);}
+  .wip-banner strong{color:var(--accent-2);}
+}
 
 footer{text-align:center;font-size:11.5px;color:var(--text-muted);padding-top:8px;}
 footer a{color:var(--text-muted);}
