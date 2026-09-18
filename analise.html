@@ -104,11 +104,26 @@
 
   <section id="screen-dashboard">
     <button class="btn-ghost" id="btn-voltar">← Nova análise</button>
-    <div class="crumbs" id="crumbs"></div>
+    <div class="dash-toolbar">
+      <div class="crumbs" id="crumbs"></div>
+      <button class="btn-ghost" id="btn-compartilhar" hidden>📤 Gerar card para compartilhar</button>
+    </div>
     <div id="dash-content"></div>
   </section>
 
   <footer>Fonte: histórico público de resultados do football-data.co.uk. Ferramenta de apoio à análise — não é recomendação de aposta. <a href="responsavel.html">Jogue com responsabilidade →</a></footer>
+</div>
+
+<div class="card-modal" id="card-modal" hidden>
+  <div class="card-modal-inner">
+    <button class="card-modal-close" id="card-modal-close" type="button" aria-label="Fechar">✕</button>
+    <img id="card-modal-img" alt="Card gerado para compartilhar">
+    <div class="card-modal-actions">
+      <button class="btn-primary" id="card-modal-copiar" type="button">Copiar imagem</button>
+      <a class="btn-ghost" id="card-modal-baixar" download="raiox-entrada-sugerida.png">Baixar imagem</a>
+    </div>
+    <span class="card-modal-hint" id="card-modal-hint"></span>
+  </div>
 </div>
 
 <script src="poisson-model.js"></script>
@@ -143,8 +158,12 @@
     screenDash: document.getElementById('screen-dashboard'),
     btnVoltar: document.getElementById('btn-voltar'),
     crumbs: document.getElementById('crumbs'),
-    dashContent: document.getElementById('dash-content')
+    dashContent: document.getElementById('dash-content'),
+    btnCompartilhar: document.getElementById('btn-compartilhar')
   };
+
+  var lastCardData = null;
+  var lastPoissonForCard = null;
 
   function buildMercados(meta){
     var list = [];
@@ -336,6 +355,39 @@
     return null;
   }
 
+  // Explica em texto simples por que o modelo favorece esse mercado, a partir da força
+  // ofensiva/defensiva relativa de cada time (mesma lógica usada em sinais.html).
+  function explicacaoCard(resultado, key, home, away, label){
+    var fc = resultado.forcaCasa, ff = resultado.forcaFora;
+    var frases = [];
+    var ehUnder = (label || '').indexOf('Under') === 0;
+    if(key==='over15' || key==='over35' || key==='btts'){
+      if(ehUnder){
+        if(fc.ataqueCasa < 0.9) frases.push(home+' ataca abaixo da média da liga jogando em casa');
+        if(ff.ataqueFora < 0.9) frases.push(away+' ataca abaixo da média jogando fora');
+        if(fc.defesaCasa < 0.9) frases.push(home+' costuma sofrer poucos gols em casa');
+        if(ff.defesaFora < 0.9) frases.push(away+' costuma sofrer poucos gols fora');
+      } else {
+        if(fc.ataqueCasa >= 1.1) frases.push(home+' ataca acima da média da liga jogando em casa');
+        if(ff.defesaFora >= 1.1) frases.push(away+' costuma sofrer gols acima da média jogando fora');
+        if(ff.ataqueFora >= 1.1) frases.push(away+' também ataca bem fora de casa');
+        if(fc.defesaCasa >= 1.1) frases.push(home+' tem sofrido gols acima da média em casa');
+      }
+    } else if(key==='vitoria'){
+      var favCasa = resultado.prob1x2.H >= resultado.prob1x2.A;
+      if(favCasa){
+        if(fc.ataqueCasa >= 1.1) frases.push(home+' ataca bem em casa');
+        if(ff.defesaFora >= 1.1) frases.push(away+' defende mal fora');
+        if(ff.ataqueFora < 0.9) frases.push(away+' ataca abaixo da média fora de casa');
+      } else {
+        if(ff.ataqueFora >= 1.1) frases.push(away+' ataca bem fora de casa');
+        if(fc.defesaCasa >= 1.1) frases.push(home+' defende mal em casa');
+      }
+    }
+    if(!frases.length) frases.push('Estimativa baseada na força ofensiva e defensiva histórica dos dois times');
+    return frases.join('; ') + '.';
+  }
+
   function renderPoissonCard(team, condicao, mercado, adversario){
     if(!mercado || !POISSON_FAMILIES[mercado.family]) return '';
     if(!adversario || adversario === team || typeof PoissonModel === 'undefined') return '';
@@ -345,6 +397,12 @@
     var resultado = PoissonModel.analisarConfronto(currentLeague.matches, mandanteConfronto, visitanteConfronto, refDate);
     var prob = poissonProbParaMercado(resultado, mercado.key, condicao);
     if(prob === null) return '';
+
+    var motivoPoisson = null;
+    if(mercado.key==='over15' || mercado.key==='over35' || mercado.key==='btts' || mercado.key==='vitoria'){
+      motivoPoisson = explicacaoCard(resultado, mercado.key, mandanteConfronto, visitanteConfronto, mercado.label);
+    }
+    lastPoissonForCard = { confronto: mandanteConfronto+' x '+visitanteConfronto, prob: fmtPct(prob), mercado: mercado.label, motivo: motivoPoisson };
 
     var faixa = lookupCalibracao(currentLeague.code, mercado.key, prob);
     var semSinal = MERCADOS_SEM_SINAL[mercado.key];
@@ -406,6 +464,8 @@
   }
 
   function runAnalysis(team, condicao, mercadoKey, janela, adversario, diaSemana, faixaHorario){
+    lastPoissonForCard = null;
+    lastCardData = null;
     var mercado = currentLeague.mercados.filter(function(m){ return m.key === mercadoKey; })[0];
     var tz = RaioXTz.getSelected();
     var all = currentLeague.matches.filter(function(m){
@@ -437,6 +497,7 @@
 
     if(windowMatches.length === 0){
       els.dashContent.innerHTML = '<div class="card empty">Sem jogos suficientes no histórico para "'+team+'" como '+(condicao==='mandante'?'mandante':'visitante')+' nesse mercado'+((diaSemana||faixaHorario)?' com esse filtro de dia/horário':'')+'.</div>';
+      els.btnCompartilhar.hidden = true;
     } else {
       var hits = windowMatches.filter(function(m){ return mercado.hit(m, condicao); });
       var rate = Math.round((hits.length / windowMatches.length) * 100);
@@ -512,6 +573,24 @@
           '<div class="table-wrap"><table><thead><tr><th>Data</th><th>Adversário</th><th>Placar</th><th>Mercado</th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div>' +
           '<div class="table-foot">Placar sempre na ordem '+team+' × adversário.</div>' +
         '</div>';
+
+      var motivoDescritivo = team+' bateu esse mercado em '+rate+'% dos últimos '+windowMatches.length+' jogos como '+(condicao==='mandante'?'mandante':'visitante')+', com '+ctx.labelFor+' de '+ctx.mediaFor+' e '+ctx.labelAgainst+' de '+ctx.mediaAgainst+'.';
+
+      lastCardData = {
+        liga: currentLeague.meta.country + ' — ' + currentLeague.meta.leagueName,
+        team: team,
+        condicao: condicao==='mandante' ? 'Mandante' : 'Visitante',
+        adversario: adversario || null,
+        mercado: mercado.label,
+        rate: rate,
+        hits: hits.length,
+        janela: windowMatches.length,
+        fullRate: fullRate,
+        fullN: full.length,
+        poisson: lastPoissonForCard,
+        motivo: (lastPoissonForCard && lastPoissonForCard.motivo) ? lastPoissonForCard.motivo : motivoDescritivo
+      };
+      els.btnCompartilhar.hidden = false;
     }
 
     if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
@@ -519,5 +598,187 @@
     els.screenDash.classList.add('visible');
     window.scrollTo(0,0);
   }
+
+  function loadImage(src){
+    return new Promise(function(resolve, reject){
+      var img = new Image();
+      img.onload = function(){ resolve(img); };
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+    var words = text.split(' ');
+    var line = '';
+    for(var n=0; n<words.length; n++){
+      var testLine = line + words[n] + ' ';
+      if(ctx.measureText(testLine).width > maxWidth && n > 0){
+        ctx.fillText(line, x, y);
+        line = words[n] + ' ';
+        y += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, x, y);
+    return y + lineHeight;
+  }
+
+  function gerarCard(){
+    if(!lastCardData) return;
+    var btn = els.btnCompartilhar;
+    var original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Gerando…';
+
+    Promise.all([
+      loadImage('assets/logo.svg'),
+      (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve()
+    ]).then(function(res){
+      var logo = res[0];
+      var W = 1080, H = 1500;
+      var canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      var ctx = canvas.getContext('2d');
+      var pad = 72;
+
+      var grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, '#0D1512');
+      grad.addColorStop(1, '#16241C');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#3FC57C'; ctx.fillRect(0, 0, W, 10);
+
+      ctx.drawImage(logo, pad, 56, 92, 92);
+      ctx.fillStyle = '#EAF1EB';
+      ctx.font = "700 40px Oswald, sans-serif";
+      ctx.fillText('RAIO-X DO MERCADO', pad + 114, 98);
+      ctx.fillStyle = '#93A69B';
+      ctx.font = "500 22px Inter, sans-serif";
+      ctx.fillText('análise histórica pré-jogo', pad + 114, 132);
+
+      var y = 208;
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke();
+
+      y += 56;
+      ctx.fillStyle = '#93A69B';
+      ctx.font = "600 24px Inter, sans-serif";
+      ctx.fillText(lastCardData.liga.toUpperCase(), pad, y);
+
+      y += 58;
+      ctx.fillStyle = '#EAF1EB';
+      ctx.font = "700 50px Oswald, sans-serif";
+      ctx.fillText(lastCardData.team, pad, y);
+
+      y += 42;
+      ctx.fillStyle = '#93A69B';
+      ctx.font = "500 26px Inter, sans-serif";
+      ctx.fillText(lastCardData.condicao + (lastCardData.adversario ? '  ·  vs ' + lastCardData.adversario : ''), pad, y);
+
+      y += 60;
+      ctx.fillStyle = '#E3B84D';
+      ctx.font = "600 32px Inter, sans-serif";
+      ctx.fillText('ENTRADA SUGERIDA: ' + lastCardData.mercado.toUpperCase(), pad, y);
+
+      y += 150;
+      ctx.fillStyle = '#5CDB93';
+      ctx.font = "700 168px Oswald, sans-serif";
+      ctx.fillText(lastCardData.rate + '%', pad, y);
+
+      y += 46;
+      ctx.fillStyle = '#EAF1EB';
+      ctx.font = "500 28px Inter, sans-serif";
+      ctx.fillText('bateu em ' + lastCardData.hits + ' dos últimos ' + lastCardData.janela + ' jogos', pad, y);
+
+      y += 42;
+      ctx.fillStyle = '#93A69B';
+      ctx.font = "500 24px Inter, sans-serif";
+      ctx.fillText('histórico completo: ' + lastCardData.fullRate + '% em ' + lastCardData.fullN + ' jogos', pad, y);
+
+      if(lastCardData.poisson){
+        y += 54;
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+        ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke();
+        y += 44;
+        ctx.fillStyle = '#93A69B';
+        ctx.font = "600 20px Inter, sans-serif";
+        ctx.fillText('MODELO ESTATÍSTICO (POISSON) · ' + lastCardData.poisson.confronto, pad, y);
+        y += 38;
+        ctx.fillStyle = '#EAF1EB';
+        ctx.font = "600 28px Inter, sans-serif";
+        ctx.fillText('probabilidade do modelo: ' + lastCardData.poisson.prob, pad, y);
+      }
+
+      y += 56;
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke();
+      y += 42;
+      ctx.fillStyle = '#E3B84D';
+      ctx.font = "600 22px Inter, sans-serif";
+      ctx.fillText('POR QUE:', pad, y);
+      y += 36;
+      ctx.fillStyle = '#EAF1EB';
+      ctx.font = "500 25px Inter, sans-serif";
+      wrapText(ctx, lastCardData.motivo, pad, y, W - pad * 2, 34);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.07)';
+      ctx.fillRect(0, H - 130, W, 130);
+      ctx.fillStyle = '#93A69B';
+      ctx.font = "500 21px Inter, sans-serif";
+      ctx.fillText('Ferramenta de apoio à análise — não garante resultado. Aposte com responsabilidade.', pad, H - 84);
+      ctx.fillStyle = '#5CDB93';
+      ctx.font = "600 22px 'JetBrains Mono', monospace";
+      ctx.fillText('4allnerd-maker.github.io/raio-x-mercado', pad, H - 46);
+
+      canvas.toBlob(function(blob){
+        showCardModal(blob);
+        btn.disabled = false;
+        btn.textContent = original;
+      }, 'image/png');
+    }).catch(function(err){
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = original;
+    });
+  }
+
+  var cardModalEls = {
+    modal: document.getElementById('card-modal'),
+    img: document.getElementById('card-modal-img'),
+    baixar: document.getElementById('card-modal-baixar'),
+    copiar: document.getElementById('card-modal-copiar'),
+    fechar: document.getElementById('card-modal-close'),
+    hint: document.getElementById('card-modal-hint')
+  };
+  var cardModalUrl = null;
+
+  function showCardModal(blob){
+    if(cardModalUrl) URL.revokeObjectURL(cardModalUrl);
+    cardModalUrl = URL.createObjectURL(blob);
+    cardModalEls.img.src = cardModalUrl;
+    cardModalEls.baixar.href = cardModalUrl;
+    cardModalEls.hint.textContent = '';
+    cardModalEls.modal.hidden = false;
+
+    cardModalEls.copiar.onclick = function(){
+      if(navigator.clipboard && window.ClipboardItem){
+        navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]).then(function(){
+          cardModalEls.hint.textContent = 'Imagem copiada! Já pode colar no grupo.';
+        }).catch(function(){
+          cardModalEls.hint.textContent = 'Não deu pra copiar automático nesse navegador — usa o botão Baixar.';
+        });
+      } else {
+        cardModalEls.hint.textContent = 'Esse navegador não suporta copiar imagem — usa o botão Baixar.';
+      }
+    };
+  }
+
+  cardModalEls.fechar.addEventListener('click', function(){ cardModalEls.modal.hidden = true; });
+  cardModalEls.modal.addEventListener('click', function(e){
+    if(e.target === cardModalEls.modal) cardModalEls.modal.hidden = true;
+  });
+
+  els.btnCompartilhar.addEventListener('click', gerarCard);
 })();
 </script>
