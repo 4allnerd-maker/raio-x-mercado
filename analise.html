@@ -45,6 +45,7 @@
         <div class="seg" id="seg-condicao">
           <button type="button" data-val="mandante" class="active">Mandante</button>
           <button type="button" data-val="visitante">Visitante</button>
+          <button type="button" data-val="geral">Geral (casa + fora)</button>
         </div>
       </div>
 
@@ -288,7 +289,8 @@
 
       if(params && params.get('time') && db.teams.indexOf(params.get('time')) >= 0){
         els.time.value = params.get('time');
-        var cond = params.get('condicao') === 'visitante' ? 'visitante' : 'mandante';
+        var condParam = params.get('condicao');
+        var cond = (condParam === 'visitante' || condParam === 'geral') ? condParam : 'mandante';
         state.condicao = cond;
         Array.prototype.forEach.call(els.segCondicao.children, function(b){ b.classList.toggle('active', b.dataset.val === cond); });
         var adv = params.get('adversario');
@@ -424,6 +426,9 @@
   function renderPoissonCard(team, condicao, mercado, adversario){
     if(!mercado || !POISSON_FAMILIES[mercado.family]) return '';
     if(!adversario || adversario === team || typeof PoissonModel === 'undefined') return '';
+    if(condicao === 'geral'){
+      return '<div class="card poisson-card"><div class="poisson-title">Previsão do modelo</div><div class="calib-note">A previsão do modelo depende de quem joga em casa. Escolha <strong>Mandante</strong> ou <strong>Visitante</strong> para ver a probabilidade deste confronto.</div></div>';
+    }
     var refDate = currentLeague.matches[currentLeague.matches.length - 1].d;
     var mandanteConfronto = condicao === 'mandante' ? team : adversario;
     var visitanteConfronto = condicao === 'mandante' ? adversario : team;
@@ -458,12 +463,13 @@
     '</div>';
   }
 
-  function computeContextStats(mercado, windowMatches, condicao){
+  function computeContextStats(mercado, windowMatches, condicao, team){
     function sideVals(getHome, getAway){
       var forSum=0, againstSum=0, n=windowMatches.length;
       windowMatches.forEach(function(m){
-        var forV = condicao==='mandante' ? getHome(m) : getAway(m);
-        var againstV = condicao==='mandante' ? getAway(m) : getHome(m);
+        var isHome = condicao==='geral' ? m.h===team : condicao==='mandante';
+        var forV = isHome ? getHome(m) : getAway(m);
+        var againstV = isHome ? getAway(m) : getHome(m);
         forSum += (forV||0); againstSum += (againstV||0);
       });
       return { mediaFor:(forSum/n).toFixed(2), mediaAgainst:(againstSum/n).toFixed(2) };
@@ -501,10 +507,17 @@
     lastCardData = null;
     var mercado = currentLeague.mercados.filter(function(m){ return m.key === mercadoKey; })[0];
     var tz = RaioXTz.getSelected();
+    var geral = condicao === 'geral';
+    var h2h = (adversario && adversario !== team) ? adversario : null;
+    function condOf(m){ return geral ? (m.h === team ? 'mandante' : 'visitante') : condicao; }
+    function oppOf(m){ return m.h === team ? m.a : m.h; }
+    var condLabel = geral ? 'Geral' : (condicao === 'mandante' ? 'Mandante' : 'Visitante');
+    var condFrase = geral ? 'em todos os jogos' : ('como ' + (condicao === 'mandante' ? 'mandante' : 'visitante'));
     var all = currentLeague.matches.filter(function(m){
-      var playedAs = condicao === 'mandante' ? m.h === team : m.a === team;
+      var playedAs = geral ? (m.h === team || m.a === team) : (condicao === 'mandante' ? m.h === team : m.a === team);
       if(!playedAs) return false;
-      if(mercado.hit(m, condicao) === null) return false;
+      if(h2h && oppOf(m) !== h2h) return false;
+      if(mercado.hit(m, condOf(m)) === null) return false;
       if(diaSemana || faixaHorario){
         var conv = RaioXTz.convertFixture(m.d, m.t || '12:00', tz);
         if(diaSemana && conv.weekday !== diaSemana) return false;
@@ -522,49 +535,48 @@
     els.crumbs.innerHTML =
       '<span class="crumb">'+currentLeague.meta.country+' — '+currentLeague.meta.leagueName+'</span>' +
       '<span class="crumb"><strong>'+team+'</strong></span>' +
-      '<span class="crumb">'+(condicao==='mandante'?'Mandante':'Visitante')+'</span>' +
+      '<span class="crumb">'+condLabel+'</span>' +
       '<span class="crumb"><strong>'+mercado.label+'</strong></span>' +
-      (adversario ? '<span class="crumb">vs <strong>'+adversario+'</strong></span>' : '') +
+      (h2h ? '<span class="crumb">vs <strong>'+h2h+'</strong> (confronto direto)</span>' : '') +
       (diaSemana ? '<span class="crumb">'+diaSemana+'</span>' : '') +
       (faixaHorario ? '<span class="crumb">'+FAIXA_LABEL[faixaHorario]+'</span>' : '');
 
     if(windowMatches.length === 0){
-      els.dashContent.innerHTML = '<div class="card empty">Sem jogos suficientes no histórico para "'+team+'" como '+(condicao==='mandante'?'mandante':'visitante')+' nesse mercado'+((diaSemana||faixaHorario)?' com esse filtro de dia/horário':'')+'.</div>';
+      els.dashContent.innerHTML = '<div class="card empty">Sem jogos suficientes no histórico para "'+team+'" '+condFrase+(h2h?' contra '+h2h:'')+' nesse mercado'+((diaSemana||faixaHorario)?' com esse filtro de dia/horário':'')+'.</div>';
       els.btnCompartilhar.hidden = true;
     } else {
-      var hits = windowMatches.filter(function(m){ return mercado.hit(m, condicao); });
+      var hits = windowMatches.filter(function(m){ return mercado.hit(m, condOf(m)); });
       var rate = Math.round((hits.length / windowMatches.length) * 100);
-      var fullHits = full.filter(function(m){ return mercado.hit(m, condicao); });
+      var fullHits = full.filter(function(m){ return mercado.hit(m, condOf(m)); });
       var fullRate = Math.round((fullHits.length / full.length) * 100);
 
       var confLabel = rate >= 70 ? 'Alta' : rate >= 40 ? 'Média' : 'Baixa';
       var confClass = rate >= 70 ? 'alta' : rate >= 40 ? 'media' : 'baixa';
 
-      var ctx = computeContextStats(mercado, windowMatches, condicao);
+      var ctx = computeContextStats(mercado, windowMatches, condicao, team);
 
       var chronological = windowMatches.slice().reverse();
       var maxStreak = 0, curStreak = 0;
       chronological.forEach(function(m){
-        if(mercado.hit(m, condicao)){ curStreak++; maxStreak = Math.max(maxStreak, curStreak); }
+        if(mercado.hit(m, condOf(m))){ curStreak++; maxStreak = Math.max(maxStreak, curStreak); }
         else { curStreak = 0; }
       });
       var curFromNow = 0;
       for(var i=0;i<windowMatches.length;i++){
-        if(mercado.hit(windowMatches[i], condicao)) curFromNow++;
+        if(mercado.hit(windowMatches[i], condOf(windowMatches[i]))) curFromNow++;
         else break;
       }
 
       var fgChips = chronological.map(function(m){
-        var isHit = mercado.hit(m, condicao);
-        var opp = condicao==='mandante' ? m.a : m.h;
-        var title = fmtDate(m.d)+' vs '+opp+' — '+m.hg+'x'+m.ag;
+        var isHit = mercado.hit(m, condOf(m));
+        var title = fmtDate(m.d)+' vs '+oppOf(m)+' — '+(m.h===team ? m.hg+'x'+m.ag : m.ag+'x'+m.hg);
         return '<div class="fg-chip '+(isHit?'hit':'miss')+'" title="'+title+'">'+(isHit?'✓':'✕')+'</div>';
       }).join('');
 
       var rowsHtml = windowMatches.map(function(m){
-        var isHit = mercado.hit(m, condicao);
-        var opp = condicao==='mandante' ? m.a : m.h;
-        var placar = condicao==='mandante' ? (m.hg+' - '+m.ag) : (m.ag+' - '+m.hg);
+        var isHit = mercado.hit(m, condOf(m));
+        var opp = oppOf(m) + (geral ? ' <span style="color:var(--text-muted);font-size:11px;">('+(m.h===team?'casa':'fora')+')</span>' : '');
+        var placar = m.h===team ? (m.hg+' - '+m.ag) : (m.ag+' - '+m.hg);
         return '<tr>' +
           '<td>'+fmtDate(m.d)+'</td>' +
           '<td>'+opp+'</td>' +
@@ -578,12 +590,12 @@
       els.dashContent.innerHTML =
         '<div class="card hero">' +
           '<div class="hero-top">' +
-            '<span class="hero-label"><strong>'+team+'</strong> como '+(condicao==='mandante'?'mandante':'visitante')+' · mercado <strong>'+mercado.label+'</strong></span>' +
+            '<span class="hero-label"><strong>'+team+'</strong> '+condFrase+(h2h?' contra <strong>'+h2h+'</strong>':'')+' · mercado <strong>'+mercado.label+'</strong></span>' +
             '<span class="badge '+confClass+'" title="Baseado só no retrospecto do time nessa janela — não é validado por backtest">Frequência '+confLabel+'</span>' +
           '</div>' +
           '<div class="hero-stat">' +
             '<span class="num">'+rate+'%</span>' +
-            '<span class="num-sub">bateu em '+hits.length+' dos últimos '+windowMatches.length+' jogos</span>' +
+            '<span class="num-sub">bateu em '+hits.length+' dos últimos '+windowMatches.length+(h2h?' confrontos':' jogos')+'</span>' +
           '</div>' +
           '<div class="form-guide">' +
             '<div class="fg-label"><span>Sequência (mais antigo → mais recente)</span><span>sequência atual: '+curFromNow+'</span></div>' +
@@ -598,22 +610,23 @@
           '<div class="card stat-tile"><span class="stat-num">'+ctx.mediaAgainst+'</span><span class="stat-label">'+ctx.labelAgainst+'</span></div>' +
           extraTile +
           '<div class="card stat-tile"><span class="stat-num">'+maxStreak+'</span><span class="stat-label">maior sequência de acerto na janela</span></div>' +
-          '<div class="card stat-tile"><span class="stat-num">'+fullRate+'%</span><span class="stat-label">acerto histórico completo ('+full.length+' jogos)</span></div>' +
+          '<div class="card stat-tile"><span class="stat-num">'+fullRate+'%</span><span class="stat-label">acerto histórico '+(h2h?'contra '+h2h:'completo')+' ('+full.length+' jogos)</span></div>' +
         '</div>' +
 
         '<div class="card">' +
-          '<div class="table-title">Últimos '+windowMatches.length+' jogos</div>' +
+          '<div class="table-title">'+(h2h ? 'Últimos '+windowMatches.length+' confrontos contra '+h2h : 'Últimos '+windowMatches.length+' jogos')+'</div>' +
           '<div class="table-wrap"><table><thead><tr><th>Data</th><th>Adversário</th><th>Placar</th><th>Mercado</th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div>' +
-          '<div class="table-foot">Placar sempre na ordem '+team+' × adversário.</div>' +
+          '<div class="table-foot">Placar sempre na ordem '+team+' × adversário.'+(h2h && windowMatches.length < janela ? ' Só há '+windowMatches.length+' confronto(s) na base com esses filtros.' : '')+'</div>' +
         '</div>';
 
-      var motivoDescritivo = team+' bateu esse mercado em '+rate+'% dos últimos '+windowMatches.length+' jogos como '+(condicao==='mandante'?'mandante':'visitante')+', com '+ctx.labelFor+' de '+ctx.mediaFor+' e '+ctx.labelAgainst+' de '+ctx.mediaAgainst+'.';
+      var motivoDescritivo = team+' bateu esse mercado em '+rate+'% dos últimos '+windowMatches.length+(h2h?' confrontos contra '+h2h:' jogos')+' '+condFrase+', com '+ctx.labelFor+' de '+ctx.mediaFor+' e '+ctx.labelAgainst+' de '+ctx.mediaAgainst+'.';
 
       lastCardData = {
         liga: currentLeague.meta.country + ' — ' + currentLeague.meta.leagueName,
         team: team,
-        condicao: condicao==='mandante' ? 'Mandante' : 'Visitante',
+        condicao: condLabel,
         adversario: adversario || null,
+        h2h: !!h2h,
         mercado: mercado.label,
         rate: rate,
         hits: hits.length,
@@ -737,12 +750,12 @@
       y += 46;
       ctx.fillStyle = '#EAF1EB';
       ctx.font = "500 28px Inter, sans-serif";
-      ctx.fillText('bateu em ' + lastCardData.hits + ' dos últimos ' + lastCardData.janela + ' jogos', pad, y);
+      ctx.fillText('bateu em ' + lastCardData.hits + ' dos últimos ' + lastCardData.janela + (lastCardData.h2h ? ' confrontos diretos' : ' jogos'), pad, y);
 
       y += 42;
       ctx.fillStyle = '#93A69B';
       ctx.font = "500 24px Inter, sans-serif";
-      ctx.fillText('histórico completo: ' + lastCardData.fullRate + '% em ' + lastCardData.fullN + ' jogos', pad, y);
+      ctx.fillText((lastCardData.h2h ? 'histórico do confronto: ' : 'histórico completo: ') + lastCardData.fullRate + '% em ' + lastCardData.fullN + ' jogos', pad, y);
 
       if(lastCardData.poisson){
         y += 54;
