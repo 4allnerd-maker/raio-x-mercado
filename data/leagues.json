@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-28T13:24:14.541Z",
+  "updatedAt": "2026-09-29T12:30:33.614Z",
   "leagues": [
     {
       "code": "D1",
@@ -161,7 +161,7 @@
       "country": "Espanha",
       "leagueName": "Segunda División",
       "tier": "principal",
-      "matchCount": 4234,
+      "matchCount": 4235,
       "teamCount": 54,
       "hasHT": true,
       "hasCorners": true,
