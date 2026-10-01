@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-30T12:14:45.290Z",
+  "updatedAt": "2026-10-01T12:49:08.339Z",
   "leagues": [
     {
       "code": "D1",
@@ -719,7 +719,7 @@
       "country": "EUA",
       "leagueName": "MLS",
       "tier": "extra",
-      "matchCount": 4491,
+      "matchCount": 4492,
       "teamCount": 30,
       "hasHT": false,
       "hasCorners": false,
@@ -730,7 +730,7 @@
         "pctOver25": 58.8,
         "pctHomeWin": 48.6,
         "pctDraw": 25,
-        "pctAwayWin": 26.3
+        "pctAwayWin": 26.4
       },
       "seasons": [
         "2017",
