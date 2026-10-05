@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-04T12:04:12.098Z",
+  "updatedAt": "2026-10-05T14:06:54.850Z",
   "leagues": [
     {
       "code": "D1",
@@ -161,14 +161,14 @@
       "country": "Espanha",
       "leagueName": "Segunda División",
       "tier": "principal",
-      "matchCount": 4235,
+      "matchCount": 4245,
       "teamCount": 54,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
         "avgGoals": 2.3,
-        "pctBtts": 48,
+        "pctBtts": 48.1,
         "pctOver25": 40.8,
         "pctHomeWin": 44.7,
         "pctDraw": 29.7,
@@ -378,7 +378,7 @@
       "country": "Inglaterra",
       "leagueName": "League One",
       "tier": "principal",
-      "matchCount": 4903,
+      "matchCount": 4906,
       "teamCount": 60,
       "hasHT": true,
       "hasCorners": true,
@@ -387,9 +387,9 @@
         "avgGoals": 2.61,
         "pctBtts": 51.5,
         "pctOver25": 49.2,
-        "pctHomeWin": 43.2,
+        "pctHomeWin": 43.1,
         "pctDraw": 25.7,
-        "pctAwayWin": 31.1
+        "pctAwayWin": 31.2
       },
       "seasons": [
         "1718",
@@ -409,7 +409,7 @@
       "country": "Inglaterra",
       "leagueName": "League Two",
       "tier": "principal",
-      "matchCount": 4950,
+      "matchCount": 4958,
       "teamCount": 54,
       "hasHT": true,
       "hasCorners": true,
@@ -418,9 +418,9 @@
         "avgGoals": 2.55,
         "pctBtts": 51.4,
         "pctOver25": 47,
-        "pctHomeWin": 42.7,
+        "pctHomeWin": 42.8,
         "pctDraw": 27.2,
-        "pctAwayWin": 30.1
+        "pctAwayWin": 30
       },
       "seasons": [
         "1718",
