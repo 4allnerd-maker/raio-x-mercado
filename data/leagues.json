@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-05T14:06:54.850Z",
+  "updatedAt": "2026-10-06T13:05:37.921Z",
   "leagues": [
     {
       "code": "D1",
@@ -161,7 +161,7 @@
       "country": "Espanha",
       "leagueName": "Segunda División",
       "tier": "principal",
-      "matchCount": 4245,
+      "matchCount": 4246,
       "teamCount": 54,
       "hasHT": true,
       "hasCorners": true,
@@ -564,14 +564,14 @@
       "country": "Argentina",
       "leagueName": "Liga Profesional",
       "tier": "extra",
-      "matchCount": 4271,
+      "matchCount": 4285,
       "teamCount": 40,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.2,
-        "pctBtts": 44.1,
+        "pctBtts": 44.2,
         "pctOver25": 37.8,
         "pctHomeWin": 42.6,
         "pctDraw": 30.6,
@@ -626,7 +626,7 @@
       "country": "Brasil",
       "leagueName": "Série A",
       "tier": "extra",
-      "matchCount": 3697,
+      "matchCount": 3699,
       "teamCount": 33,
       "hasHT": false,
       "hasCorners": false,
@@ -634,10 +634,10 @@
       "agg": {
         "avgGoals": 2.4,
         "pctBtts": 49.1,
-        "pctOver25": 43.5,
+        "pctOver25": 43.6,
         "pctHomeWin": 47.2,
-        "pctDraw": 27.5,
-        "pctAwayWin": 25.3
+        "pctDraw": 27.4,
+        "pctAwayWin": 25.4
       },
       "seasons": [
         "2017",
@@ -781,14 +781,14 @@
       "country": "Irlanda",
       "leagueName": "Premier Division",
       "tier": "extra",
-      "matchCount": 1731,
+      "matchCount": 1732,
       "teamCount": 18,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.53,
-        "pctBtts": 48.1,
+        "pctBtts": 48.2,
         "pctOver25": 47.4,
         "pctHomeWin": 43.2,
         "pctDraw": 25.1,
