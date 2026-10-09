@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-08T13:08:43.059Z",
+  "updatedAt": "2026-10-09T12:55:58.048Z",
   "leagues": [
     {
       "code": "D1",
@@ -626,18 +626,18 @@
       "country": "Brasil",
       "leagueName": "Série A",
       "tier": "extra",
-      "matchCount": 3699,
+      "matchCount": 3709,
       "teamCount": 33,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
-        "avgGoals": 2.4,
+        "avgGoals": 2.41,
         "pctBtts": 49.1,
         "pctOver25": 43.6,
         "pctHomeWin": 47.2,
-        "pctDraw": 27.4,
-        "pctAwayWin": 25.4
+        "pctDraw": 27.5,
+        "pctAwayWin": 25.3
       },
       "seasons": [
         "2017",
@@ -719,7 +719,7 @@
       "country": "EUA",
       "leagueName": "MLS",
       "tier": "extra",
-      "matchCount": 4492,
+      "matchCount": 4493,
       "teamCount": 30,
       "hasHT": false,
       "hasCorners": false,
@@ -750,15 +750,15 @@
       "country": "Finlândia",
       "leagueName": "Veikkausliiga",
       "tier": "extra",
-      "matchCount": 1700,
+      "matchCount": 1703,
       "teamCount": 21,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.71,
-        "pctBtts": 52.8,
-        "pctOver25": 51.5,
+        "pctBtts": 52.7,
+        "pctOver25": 51.4,
         "pctHomeWin": 42,
         "pctDraw": 25.1,
         "pctAwayWin": 32.9
@@ -781,13 +781,13 @@
       "country": "Irlanda",
       "leagueName": "Premier Division",
       "tier": "extra",
-      "matchCount": 1732,
+      "matchCount": 1733,
       "teamCount": 18,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
-        "avgGoals": 2.53,
+        "avgGoals": 2.54,
         "pctBtts": 48.2,
         "pctOver25": 47.4,
         "pctHomeWin": 43.2,
@@ -936,7 +936,7 @@
       "country": "Romênia",
       "leagueName": "Liga I",
       "tier": "extra",
-      "matchCount": 2800,
+      "matchCount": 2801,
       "teamCount": 34,
       "hasHT": false,
       "hasCorners": false,
@@ -944,10 +944,10 @@
       "agg": {
         "avgGoals": 2.41,
         "pctBtts": 47.5,
-        "pctOver25": 43.1,
+        "pctOver25": 43.2,
         "pctHomeWin": 42.9,
         "pctDraw": 27.5,
-        "pctAwayWin": 29.5
+        "pctAwayWin": 29.6
       },
       "seasons": [
         "2017/2018",
