@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-14T11:33:30.777Z",
+  "updatedAt": "2026-10-15T11:09:39.030Z",
   "leagues": [
     {
       "code": "D1",
@@ -347,18 +347,18 @@
       "country": "Inglaterra",
       "leagueName": "Championship",
       "tier": "principal",
-      "matchCount": 5075,
+      "matchCount": 5087,
       "teamCount": 48,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.54,
+        "avgGoals": 2.55,
         "pctBtts": 51.3,
-        "pctOver25": 47.6,
+        "pctOver25": 47.7,
         "pctHomeWin": 43,
-        "pctDraw": 26.6,
-        "pctAwayWin": 30.4
+        "pctDraw": 26.5,
+        "pctAwayWin": 30.5
       },
       "seasons": [
         "1718",
