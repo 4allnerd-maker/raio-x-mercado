@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-15T11:09:39.030Z",
+  "updatedAt": "2026-10-16T11:04:10.488Z",
   "leagues": [
     {
       "code": "D1",
@@ -564,14 +564,14 @@
       "country": "Argentina",
       "leagueName": "Liga Profesional",
       "tier": "extra",
-      "matchCount": 4300,
+      "matchCount": 4302,
       "teamCount": 40,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.2,
-        "pctBtts": 44.1,
+        "pctBtts": 44.2,
         "pctOver25": 37.8,
         "pctHomeWin": 42.6,
         "pctDraw": 30.6,
@@ -719,7 +719,7 @@
       "country": "EUA",
       "leagueName": "MLS",
       "tier": "extra",
-      "matchCount": 4508,
+      "matchCount": 4523,
       "teamCount": 30,
       "hasHT": false,
       "hasCorners": false,
