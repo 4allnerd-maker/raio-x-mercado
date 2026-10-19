@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-18T10:42:17.957Z",
+  "updatedAt": "2026-10-19T12:45:48.868Z",
   "leagues": [
     {
       "code": "D1",
@@ -37,23 +37,22 @@
       "country": "Alemanha",
       "leagueName": "2. Bundesliga",
       "tier": "principal",
-      "matchCount": 2817,
-      "teamCount": 37,
+      "matchCount": 2511,
+      "teamCount": 36,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
         "avgGoals": 2.95,
         "pctBtts": 58.5,
-        "pctOver25": 57.7,
-        "pctHomeWin": 43.1,
-        "pctDraw": 26.8,
-        "pctAwayWin": 30.1
+        "pctOver25": 58.2,
+        "pctHomeWin": 43.2,
+        "pctDraw": 26.2,
+        "pctAwayWin": 30.6
       },
       "seasons": [
         "1718",
         "1819",
-        "1920",
         "2021",
         "2122",
         "2223",
@@ -409,23 +408,22 @@
       "country": "Inglaterra",
       "leagueName": "League Two",
       "tier": "principal",
-      "matchCount": 4970,
-      "teamCount": 54,
+      "matchCount": 4530,
+      "teamCount": 53,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
         "avgGoals": 2.55,
-        "pctBtts": 51.4,
-        "pctOver25": 46.9,
-        "pctHomeWin": 42.7,
-        "pctDraw": 27.2,
-        "pctAwayWin": 30.1
+        "pctBtts": 51.3,
+        "pctOver25": 46.8,
+        "pctHomeWin": 42.8,
+        "pctDraw": 26.9,
+        "pctAwayWin": 30.3
       },
       "seasons": [
         "1718",
         "1819",
-        "1920",
         "2021",
         "2122",
         "2223",
