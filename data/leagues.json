@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-21T11:29:29.884Z",
+  "updatedAt": "2026-10-22T11:29:24.315Z",
   "leagues": [
     {
       "code": "D1",
@@ -130,13 +130,13 @@
       "country": "Espanha",
       "leagueName": "La Liga",
       "tier": "principal",
-      "matchCount": 3508,
+      "matchCount": 3509,
       "teamCount": 31,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.59,
+        "avgGoals": 2.6,
         "pctBtts": 51.2,
         "pctOver25": 47.3,
         "pctHomeWin": 45.2,
@@ -347,7 +347,7 @@
       "country": "Inglaterra",
       "leagueName": "Championship",
       "tier": "principal",
-      "matchCount": 5099,
+      "matchCount": 5100,
       "teamCount": 48,
       "hasHT": true,
       "hasCorners": true,
@@ -378,7 +378,7 @@
       "country": "Inglaterra",
       "leagueName": "League One",
       "tier": "principal",
-      "matchCount": 4930,
+      "matchCount": 4942,
       "teamCount": 60,
       "hasHT": true,
       "hasCorners": true,
@@ -386,9 +386,9 @@
       "agg": {
         "avgGoals": 2.61,
         "pctBtts": 51.5,
-        "pctOver25": 49.2,
+        "pctOver25": 49.3,
         "pctHomeWin": 43.2,
-        "pctDraw": 25.7,
+        "pctDraw": 25.6,
         "pctAwayWin": 31.1
       },
       "seasons": [
@@ -409,17 +409,17 @@
       "country": "Inglaterra",
       "leagueName": "League Two",
       "tier": "principal",
-      "matchCount": 4982,
+      "matchCount": 4994,
       "teamCount": 54,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
         "avgGoals": 2.55,
-        "pctBtts": 51.4,
+        "pctBtts": 51.5,
         "pctOver25": 46.9,
-        "pctHomeWin": 42.8,
-        "pctDraw": 27.2,
+        "pctHomeWin": 42.7,
+        "pctDraw": 27.3,
         "pctAwayWin": 30
       },
       "seasons": [
@@ -719,7 +719,7 @@
       "country": "EUA",
       "leagueName": "MLS",
       "tier": "extra",
-      "matchCount": 4538,
+      "matchCount": 4539,
       "teamCount": 30,
       "hasHT": false,
       "hasCorners": false,
@@ -728,7 +728,7 @@
         "avgGoals": 2.99,
         "pctBtts": 59.4,
         "pctOver25": 58.9,
-        "pctHomeWin": 48.5,
+        "pctHomeWin": 48.6,
         "pctDraw": 25.1,
         "pctAwayWin": 26.3
       },
@@ -750,8 +750,8 @@
       "country": "Finlândia",
       "leagueName": "Veikkausliiga",
       "tier": "extra",
-      "matchCount": 1715,
-      "teamCount": 21,
+      "matchCount": 1716,
+      "teamCount": 22,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
@@ -812,17 +812,17 @@
       "country": "Japão",
       "leagueName": "J1 League",
       "tier": "extra",
-      "matchCount": 3087,
+      "matchCount": 3097,
       "teamCount": 34,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
-        "avgGoals": 2.58,
+        "avgGoals": 2.59,
         "pctBtts": 50.7,
-        "pctOver25": 47.8,
+        "pctOver25": 47.9,
         "pctHomeWin": 41.2,
-        "pctDraw": 25.2,
+        "pctDraw": 25.3,
         "pctAwayWin": 33.6
       },
       "seasons": [
@@ -843,7 +843,7 @@
       "country": "México",
       "leagueName": "Liga MX",
       "tier": "extra",
-      "matchCount": 3091,
+      "matchCount": 3100,
       "teamCount": 22,
       "hasHT": false,
       "hasCorners": false,
@@ -851,10 +851,10 @@
       "agg": {
         "avgGoals": 2.71,
         "pctBtts": 55.1,
-        "pctOver25": 51.2,
+        "pctOver25": 51.3,
         "pctHomeWin": 45,
         "pctDraw": 26.3,
-        "pctAwayWin": 28.7
+        "pctAwayWin": 28.8
       },
       "seasons": [
         "2017/2018",
