@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-28T12:27:45.257Z",
+  "updatedAt": "2026-10-29T12:37:19.081Z",
   "leagues": [
     {
       "code": "D1",
@@ -99,17 +99,17 @@
       "country": "Escócia",
       "leagueName": "Premiership",
       "tier": "principal",
-      "matchCount": 2063,
+      "matchCount": 2069,
       "teamCount": 16,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
         "avgGoals": 2.69,
-        "pctBtts": 48.8,
-        "pctOver25": 51.7,
-        "pctHomeWin": 44.3,
-        "pctDraw": 23.8,
+        "pctBtts": 48.9,
+        "pctOver25": 51.8,
+        "pctHomeWin": 44.2,
+        "pctDraw": 23.9,
         "pctAwayWin": 31.9
       },
       "seasons": [
@@ -378,7 +378,7 @@
       "country": "Inglaterra",
       "leagueName": "League One",
       "tier": "principal",
-      "matchCount": 4954,
+      "matchCount": 4959,
       "teamCount": 60,
       "hasHT": true,
       "hasCorners": true,
@@ -387,7 +387,7 @@
         "avgGoals": 2.61,
         "pctBtts": 51.5,
         "pctOver25": 49.3,
-        "pctHomeWin": 43.2,
+        "pctHomeWin": 43.3,
         "pctDraw": 25.7,
         "pctAwayWin": 31.1
       },
@@ -409,7 +409,7 @@
       "country": "Inglaterra",
       "leagueName": "League Two",
       "tier": "principal",
-      "matchCount": 5006,
+      "matchCount": 5007,
       "teamCount": 54,
       "hasHT": true,
       "hasCorners": true,
@@ -417,7 +417,7 @@
       "agg": {
         "avgGoals": 2.55,
         "pctBtts": 51.5,
-        "pctOver25": 46.9,
+        "pctOver25": 47,
         "pctHomeWin": 42.7,
         "pctDraw": 27.3,
         "pctAwayWin": 30
@@ -440,7 +440,7 @@
       "country": "Itália",
       "leagueName": "Serie A",
       "tier": "principal",
-      "matchCount": 3500,
+      "matchCount": 3508,
       "teamCount": 32,
       "hasHT": true,
       "hasCorners": true,
@@ -448,10 +448,10 @@
       "agg": {
         "avgGoals": 2.73,
         "pctBtts": 53.6,
-        "pctOver25": 52.1,
-        "pctHomeWin": 41.4,
+        "pctOver25": 52.2,
+        "pctHomeWin": 41.3,
         "pctDraw": 25.8,
-        "pctAwayWin": 32.8
+        "pctAwayWin": 32.9
       },
       "seasons": [
         "1718",
@@ -471,7 +471,7 @@
       "country": "Itália",
       "leagueName": "Serie B",
       "tier": "principal",
-      "matchCount": 3544,
+      "matchCount": 3554,
       "teamCount": 53,
       "hasHT": true,
       "hasCorners": true,
@@ -482,7 +482,7 @@
         "pctOver25": 45.4,
         "pctHomeWin": 41.1,
         "pctDraw": 32,
-        "pctAwayWin": 26.9
+        "pctAwayWin": 27
       },
       "seasons": [
         "1718",
