@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-02T15:13:54.998Z",
+  "updatedAt": "2026-11-03T13:58:02.045Z",
   "leagues": [
     {
       "code": "D1",
@@ -130,7 +130,7 @@
       "country": "Espanha",
       "leagueName": "La Liga",
       "tier": "principal",
-      "matchCount": 3528,
+      "matchCount": 3529,
       "teamCount": 31,
       "hasHT": true,
       "hasCorners": true,
@@ -161,7 +161,7 @@
       "country": "Espanha",
       "leagueName": "Segunda División",
       "tier": "principal",
-      "matchCount": 4286,
+      "matchCount": 4289,
       "teamCount": 54,
       "hasHT": true,
       "hasCorners": true,
@@ -169,7 +169,7 @@
       "agg": {
         "avgGoals": 2.31,
         "pctBtts": 48.2,
-        "pctOver25": 40.9,
+        "pctOver25": 41,
         "pctHomeWin": 44.8,
         "pctDraw": 29.6,
         "pctAwayWin": 25.6
@@ -192,7 +192,7 @@
       "country": "França",
       "leagueName": "Ligue 1",
       "tier": "principal",
-      "matchCount": 3177,
+      "matchCount": 3178,
       "teamCount": 31,
       "hasHT": true,
       "hasCorners": true,
@@ -223,7 +223,7 @@
       "country": "França",
       "leagueName": "Ligue 2",
       "tier": "principal",
-      "matchCount": 3267,
+      "matchCount": 3269,
       "teamCount": 46,
       "hasHT": true,
       "hasCorners": true,
@@ -233,7 +233,7 @@
         "pctBtts": 48,
         "pctOver25": 44.1,
         "pctHomeWin": 42,
-        "pctDraw": 28.2,
+        "pctDraw": 28.1,
         "pctAwayWin": 29.9
       },
       "seasons": [
@@ -254,7 +254,7 @@
       "country": "Grécia",
       "leagueName": "Super League",
       "tier": "principal",
-      "matchCount": 2208,
+      "matchCount": 2210,
       "teamCount": 25,
       "hasHT": true,
       "hasCorners": true,
@@ -316,14 +316,14 @@
       "country": "Inglaterra",
       "leagueName": "Premier League",
       "tier": "principal",
-      "matchCount": 3509,
+      "matchCount": 3510,
       "teamCount": 34,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
         "avgGoals": 2.84,
-        "pctBtts": 52.9,
+        "pctBtts": 52.8,
         "pctOver25": 54.2,
         "pctHomeWin": 44,
         "pctDraw": 23.5,
@@ -440,7 +440,7 @@
       "country": "Itália",
       "leagueName": "Serie A",
       "tier": "principal",
-      "matchCount": 3518,
+      "matchCount": 3520,
       "teamCount": 32,
       "hasHT": true,
       "hasCorners": true,
@@ -450,8 +450,8 @@
         "pctBtts": 53.6,
         "pctOver25": 52.2,
         "pctHomeWin": 41.4,
-        "pctDraw": 25.8,
-        "pctAwayWin": 32.8
+        "pctDraw": 25.7,
+        "pctAwayWin": 32.9
       },
       "seasons": [
         "1718",
@@ -502,7 +502,7 @@
       "country": "Portugal",
       "leagueName": "Primeira Liga",
       "tier": "principal",
-      "matchCount": 2842,
+      "matchCount": 2844,
       "teamCount": 30,
       "hasHT": true,
       "hasCorners": true,
@@ -510,7 +510,7 @@
       "agg": {
         "avgGoals": 2.62,
         "pctBtts": 48.5,
-        "pctOver25": 49.4,
+        "pctOver25": 49.3,
         "pctHomeWin": 44,
         "pctDraw": 23.8,
         "pctAwayWin": 32.2
@@ -533,7 +533,7 @@
       "country": "Turquia",
       "leagueName": "Süper Lig",
       "tier": "principal",
-      "matchCount": 3177,
+      "matchCount": 3178,
       "teamCount": 38,
       "hasHT": true,
       "hasCorners": true,
@@ -541,7 +541,7 @@
       "agg": {
         "avgGoals": 2.83,
         "pctBtts": 55.8,
-        "pctOver25": 54,
+        "pctOver25": 54.1,
         "pctHomeWin": 45.3,
         "pctDraw": 25.4,
         "pctAwayWin": 29.3
@@ -564,17 +564,17 @@
       "country": "Argentina",
       "leagueName": "Liga Profesional",
       "tier": "extra",
-      "matchCount": 4331,
+      "matchCount": 4346,
       "teamCount": 40,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.2,
-        "pctBtts": 44.2,
-        "pctOver25": 37.8,
-        "pctHomeWin": 42.6,
-        "pctDraw": 30.5,
+        "pctBtts": 44.3,
+        "pctOver25": 37.9,
+        "pctHomeWin": 42.5,
+        "pctDraw": 30.6,
         "pctAwayWin": 26.9
       },
       "seasons": [
@@ -595,14 +595,14 @@
       "country": "Áustria",
       "leagueName": "Bundesliga",
       "tier": "extra",
-      "matchCount": 1798,
+      "matchCount": 1804,
       "teamCount": 19,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.9,
-        "pctBtts": 54.9,
+        "pctBtts": 55,
         "pctOver25": 55.8,
         "pctHomeWin": 40.3,
         "pctDraw": 25.5,
@@ -626,14 +626,14 @@
       "country": "Brasil",
       "leagueName": "Série A",
       "tier": "extra",
-      "matchCount": 3747,
+      "matchCount": 3750,
       "teamCount": 33,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.41,
-        "pctBtts": 49.2,
+        "pctBtts": 49.1,
         "pctOver25": 43.6,
         "pctHomeWin": 47.3,
         "pctDraw": 27.4,
@@ -688,17 +688,17 @@
       "country": "Dinamarca",
       "leagueName": "Superliga",
       "tier": "extra",
-      "matchCount": 1977,
+      "matchCount": 1983,
       "teamCount": 20,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.87,
-        "pctBtts": 58.3,
+        "pctBtts": 58.2,
         "pctOver25": 55.6,
-        "pctHomeWin": 43.1,
-        "pctDraw": 26.3,
+        "pctHomeWin": 43.2,
+        "pctDraw": 26.2,
         "pctAwayWin": 30.6
       },
       "seasons": [
@@ -719,7 +719,7 @@
       "country": "EUA",
       "leagueName": "MLS",
       "tier": "extra",
-      "matchCount": 4568,
+      "matchCount": 4583,
       "teamCount": 30,
       "hasHT": false,
       "hasCorners": false,
@@ -727,7 +727,7 @@
       "agg": {
         "avgGoals": 2.99,
         "pctBtts": 59.4,
-        "pctOver25": 59,
+        "pctOver25": 59.1,
         "pctHomeWin": 48.5,
         "pctDraw": 25.1,
         "pctAwayWin": 26.4
@@ -750,7 +750,7 @@
       "country": "Finlândia",
       "leagueName": "Veikkausliiga",
       "tier": "extra",
-      "matchCount": 1723,
+      "matchCount": 1726,
       "teamCount": 22,
       "hasHT": false,
       "hasCorners": false,
@@ -758,10 +758,10 @@
       "agg": {
         "avgGoals": 2.71,
         "pctBtts": 52.6,
-        "pctOver25": 51.2,
+        "pctOver25": 51.3,
         "pctHomeWin": 42,
-        "pctDraw": 25.2,
-        "pctAwayWin": 32.8
+        "pctDraw": 25.1,
+        "pctAwayWin": 32.9
       },
       "seasons": [
         "2017",
@@ -781,7 +781,7 @@
       "country": "Irlanda",
       "leagueName": "Premier Division",
       "tier": "extra",
-      "matchCount": 1747,
+      "matchCount": 1752,
       "teamCount": 18,
       "hasHT": false,
       "hasCorners": false,
@@ -789,10 +789,10 @@
       "agg": {
         "avgGoals": 2.54,
         "pctBtts": 48.3,
-        "pctOver25": 47.5,
+        "pctOver25": 47.6,
         "pctHomeWin": 43.4,
         "pctDraw": 25,
-        "pctAwayWin": 31.5
+        "pctAwayWin": 31.6
       },
       "seasons": [
         "2017",
@@ -812,17 +812,17 @@
       "country": "Japão",
       "leagueName": "J1 League",
       "tier": "extra",
-      "matchCount": 3107,
+      "matchCount": 3117,
       "teamCount": 34,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.59,
-        "pctBtts": 50.8,
-        "pctOver25": 47.9,
-        "pctHomeWin": 41.2,
-        "pctDraw": 25.3,
+        "pctBtts": 50.7,
+        "pctOver25": 48,
+        "pctHomeWin": 41.3,
+        "pctDraw": 25.2,
         "pctAwayWin": 33.5
       },
       "seasons": [
@@ -843,15 +843,15 @@
       "country": "México",
       "leagueName": "Liga MX",
       "tier": "extra",
-      "matchCount": 3110,
+      "matchCount": 3119,
       "teamCount": 22,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.71,
-        "pctBtts": 55.1,
-        "pctOver25": 51.2,
+        "pctBtts": 55.2,
+        "pctOver25": 51.3,
         "pctHomeWin": 44.9,
         "pctDraw": 26.3,
         "pctAwayWin": 28.8
@@ -874,7 +874,7 @@
       "country": "Noruega",
       "leagueName": "Eliteserien",
       "tier": "extra",
-      "matchCount": 2364,
+      "matchCount": 2372,
       "teamCount": 28,
       "hasHT": false,
       "hasCorners": false,
@@ -882,10 +882,10 @@
       "agg": {
         "avgGoals": 3.03,
         "pctBtts": 57.8,
-        "pctOver25": 58.9,
+        "pctOver25": 59,
         "pctHomeWin": 47,
-        "pctDraw": 23.9,
-        "pctAwayWin": 29.1
+        "pctDraw": 23.8,
+        "pctAwayWin": 29.2
       },
       "seasons": [
         "2017",
@@ -905,18 +905,18 @@
       "country": "Polônia",
       "leagueName": "Ekstraklasa",
       "tier": "extra",
-      "matchCount": 2764,
+      "matchCount": 2773,
       "teamCount": 32,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.66,
-        "pctBtts": 53.3,
-        "pctOver25": 49.7,
+        "pctBtts": 53.4,
+        "pctOver25": 49.8,
         "pctHomeWin": 44.4,
         "pctDraw": 26.6,
-        "pctAwayWin": 29.1
+        "pctAwayWin": 29
       },
       "seasons": [
         "2017/2018",
@@ -936,7 +936,7 @@
       "country": "Romênia",
       "leagueName": "Liga I",
       "tier": "extra",
-      "matchCount": 2825,
+      "matchCount": 2833,
       "teamCount": 34,
       "hasHT": false,
       "hasCorners": false,
@@ -945,7 +945,7 @@
         "avgGoals": 2.42,
         "pctBtts": 47.5,
         "pctOver25": 43.2,
-        "pctHomeWin": 42.9,
+        "pctHomeWin": 43,
         "pctDraw": 27.4,
         "pctAwayWin": 29.6
       },
@@ -998,18 +998,18 @@
       "country": "Suécia",
       "leagueName": "Allsvenskan",
       "tier": "extra",
-      "matchCount": 2382,
+      "matchCount": 2389,
       "teamCount": 31,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.77,
-        "pctBtts": 52.6,
+        "pctBtts": 52.7,
         "pctOver25": 53.1,
         "pctHomeWin": 42.7,
-        "pctDraw": 24.5,
-        "pctAwayWin": 32.9
+        "pctDraw": 24.4,
+        "pctAwayWin": 32.8
       },
       "seasons": [
         "2017",
@@ -1029,15 +1029,15 @@
       "country": "Suíça",
       "leagueName": "Super League",
       "tier": "extra",
-      "matchCount": 1841,
+      "matchCount": 1847,
       "teamCount": 18,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 3.06,
-        "pctBtts": 61.2,
-        "pctOver25": 59.3,
+        "pctBtts": 61.3,
+        "pctOver25": 59.4,
         "pctHomeWin": 43.2,
         "pctDraw": 25.7,
         "pctAwayWin": 31.1
