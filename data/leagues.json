@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-04T14:04:36.115Z",
+  "updatedAt": "2026-11-05T14:24:37.814Z",
   "leagues": [
     {
       "code": "D1",
@@ -68,8 +68,8 @@
       "country": "Bélgica",
       "leagueName": "First Division A",
       "tier": "principal",
-      "matchCount": 2654,
-      "teamCount": 27,
+      "matchCount": 2655,
+      "teamCount": 28,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
@@ -347,8 +347,8 @@
       "country": "Inglaterra",
       "leagueName": "Championship",
       "tier": "principal",
-      "matchCount": 5124,
-      "teamCount": 48,
+      "matchCount": 5136,
+      "teamCount": 49,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
@@ -378,18 +378,18 @@
       "country": "Inglaterra",
       "leagueName": "League One",
       "tier": "principal",
-      "matchCount": 4971,
-      "teamCount": 60,
+      "matchCount": 4974,
+      "teamCount": 61,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.62,
+        "avgGoals": 2.61,
         "pctBtts": 51.5,
-        "pctOver25": 49.3,
+        "pctOver25": 49.2,
         "pctHomeWin": 43.3,
         "pctDraw": 25.7,
-        "pctAwayWin": 31.1
+        "pctAwayWin": 31
       },
       "seasons": [
         "1718",
@@ -409,7 +409,7 @@
       "country": "Inglaterra",
       "leagueName": "League Two",
       "tier": "principal",
-      "matchCount": 5019,
+      "matchCount": 5020,
       "teamCount": 54,
       "hasHT": true,
       "hasCorners": true,
@@ -418,7 +418,7 @@
         "avgGoals": 2.55,
         "pctBtts": 51.6,
         "pctOver25": 47,
-        "pctHomeWin": 42.8,
+        "pctHomeWin": 42.7,
         "pctDraw": 27.2,
         "pctAwayWin": 30
       },
