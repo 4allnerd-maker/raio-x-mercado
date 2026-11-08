@@ -1,23 +1,23 @@
 {
-  "updatedAt": "2026-11-07T12:46:09.116Z",
+  "updatedAt": "2026-11-08T13:22:36.713Z",
   "leagues": [
     {
       "code": "D1",
       "country": "Alemanha",
       "leagueName": "Bundesliga",
       "tier": "principal",
-      "matchCount": 2826,
-      "teamCount": 30,
+      "matchCount": 2142,
+      "teamCount": 27,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 3.13,
+        "avgGoals": 3.1,
         "pctBtts": 59.2,
-        "pctOver25": 60.6,
-        "pctHomeWin": 43.8,
-        "pctDraw": 24.8,
-        "pctAwayWin": 31.4
+        "pctOver25": 59.9,
+        "pctHomeWin": 44.4,
+        "pctDraw": 24.9,
+        "pctAwayWin": 30.7
       },
       "seasons": [
         "1718",
@@ -26,10 +26,7 @@
         "2021",
         "2122",
         "2223",
-        "2324",
-        "2425",
-        "2526",
-        "2627"
+        "2324"
       ]
     },
     {
@@ -68,24 +65,23 @@
       "country": "Bélgica",
       "leagueName": "First Division A",
       "tier": "principal",
-      "matchCount": 2655,
+      "matchCount": 2349,
       "teamCount": 27,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.88,
-        "pctBtts": 55.8,
-        "pctOver25": 55.6,
-        "pctHomeWin": 43.6,
-        "pctDraw": 24.4,
-        "pctAwayWin": 32
+        "avgGoals": 2.86,
+        "pctBtts": 55.1,
+        "pctOver25": 55,
+        "pctHomeWin": 44,
+        "pctDraw": 24.6,
+        "pctAwayWin": 31.4
       },
       "seasons": [
         "1718",
         "1819",
         "1920",
-        "2021",
         "2122",
         "2223",
         "2324",
@@ -99,28 +95,24 @@
       "country": "Escócia",
       "leagueName": "Premiership",
       "tier": "principal",
-      "matchCount": 2072,
+      "matchCount": 1209,
       "teamCount": 16,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.69,
-        "pctBtts": 48.8,
-        "pctOver25": 51.7,
-        "pctHomeWin": 44.3,
-        "pctDraw": 23.9,
-        "pctAwayWin": 31.9
+        "avgGoals": 2.67,
+        "pctBtts": 49,
+        "pctOver25": 50.5,
+        "pctHomeWin": 45,
+        "pctDraw": 23.4,
+        "pctAwayWin": 31.6
       },
       "seasons": [
         "1718",
         "1819",
-        "1920",
-        "2021",
         "2122",
         "2223",
-        "2324",
-        "2425",
         "2526",
         "2627"
       ]
@@ -130,24 +122,23 @@
       "country": "Espanha",
       "leagueName": "La Liga",
       "tier": "principal",
-      "matchCount": 3529,
+      "matchCount": 3149,
       "teamCount": 31,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.6,
+        "avgGoals": 2.61,
         "pctBtts": 51.2,
-        "pctOver25": 47.4,
-        "pctHomeWin": 45.3,
-        "pctDraw": 26.5,
-        "pctAwayWin": 28.3
+        "pctOver25": 47.9,
+        "pctHomeWin": 45.7,
+        "pctDraw": 26.2,
+        "pctAwayWin": 28.1
       },
       "seasons": [
         "1718",
         "1819",
         "1920",
-        "2021",
         "2122",
         "2223",
         "2324",
@@ -192,18 +183,18 @@
       "country": "França",
       "leagueName": "Ligue 1",
       "tier": "principal",
-      "matchCount": 3178,
-      "teamCount": 31,
+      "matchCount": 3097,
+      "teamCount": 30,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.75,
-        "pctBtts": 53.4,
-        "pctOver25": 52.4,
-        "pctHomeWin": 43.5,
-        "pctDraw": 25.2,
-        "pctAwayWin": 31.3
+        "avgGoals": 2.74,
+        "pctBtts": 53.2,
+        "pctOver25": 52.2,
+        "pctHomeWin": 43.3,
+        "pctDraw": 25.3,
+        "pctAwayWin": 31.4
       },
       "seasons": [
         "1718",
@@ -214,8 +205,7 @@
         "2223",
         "2324",
         "2425",
-        "2526",
-        "2627"
+        "2526"
       ]
     },
     {
@@ -223,23 +213,22 @@
       "country": "França",
       "leagueName": "Ligue 2",
       "tier": "principal",
-      "matchCount": 3269,
+      "matchCount": 2989,
       "teamCount": 46,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.43,
-        "pctBtts": 48,
-        "pctOver25": 44.1,
-        "pctHomeWin": 42,
-        "pctDraw": 28.1,
-        "pctAwayWin": 29.9
+        "avgGoals": 2.45,
+        "pctBtts": 48.2,
+        "pctOver25": 44.6,
+        "pctHomeWin": 42.3,
+        "pctDraw": 28,
+        "pctAwayWin": 29.7
       },
       "seasons": [
         "1718",
         "1819",
-        "1920",
         "2021",
         "2122",
         "2223",
@@ -254,18 +243,18 @@
       "country": "Grécia",
       "leagueName": "Super League",
       "tier": "principal",
-      "matchCount": 2210,
-      "teamCount": 25,
+      "matchCount": 1977,
+      "teamCount": 24,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.43,
-        "pctBtts": 44.7,
-        "pctOver25": 45,
-        "pctHomeWin": 43,
-        "pctDraw": 26.8,
-        "pctAwayWin": 30.2
+        "avgGoals": 2.42,
+        "pctBtts": 44.2,
+        "pctOver25": 44.8,
+        "pctHomeWin": 43.3,
+        "pctDraw": 27.3,
+        "pctAwayWin": 29.3
       },
       "seasons": [
         "1718",
@@ -275,7 +264,6 @@
         "2122",
         "2223",
         "2324",
-        "2425",
         "2526",
         "2627"
       ]
@@ -316,30 +304,26 @@
       "country": "Inglaterra",
       "leagueName": "Premier League",
       "tier": "principal",
-      "matchCount": 3510,
-      "teamCount": 34,
+      "matchCount": 2280,
+      "teamCount": 31,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.84,
-        "pctBtts": 52.8,
-        "pctOver25": 54.2,
-        "pctHomeWin": 44,
-        "pctDraw": 23.5,
-        "pctAwayWin": 32.5
+        "avgGoals": 2.79,
+        "pctBtts": 52.7,
+        "pctOver25": 53.5,
+        "pctHomeWin": 45,
+        "pctDraw": 23.9,
+        "pctAwayWin": 31
       },
       "seasons": [
         "1718",
         "1819",
         "1920",
-        "2021",
-        "2122",
         "2223",
-        "2324",
         "2425",
-        "2526",
-        "2627"
+        "2526"
       ]
     },
     {
@@ -378,28 +362,26 @@
       "country": "Inglaterra",
       "leagueName": "League One",
       "tier": "principal",
-      "matchCount": 4974,
-      "teamCount": 60,
+      "matchCount": 3870,
+      "teamCount": 55,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.61,
-        "pctBtts": 51.5,
-        "pctOver25": 49.2,
-        "pctHomeWin": 43.3,
-        "pctDraw": 25.7,
-        "pctAwayWin": 31
+        "avgGoals": 2.62,
+        "pctBtts": 51.8,
+        "pctOver25": 49.4,
+        "pctHomeWin": 43.7,
+        "pctDraw": 26.2,
+        "pctAwayWin": 30.1
       },
       "seasons": [
         "1718",
         "1819",
         "1920",
-        "2021",
         "2122",
         "2223",
         "2324",
-        "2425",
         "2526",
         "2627"
       ]
@@ -409,23 +391,21 @@
       "country": "Inglaterra",
       "leagueName": "League Two",
       "tier": "principal",
-      "matchCount": 5020,
-      "teamCount": 54,
+      "matchCount": 4028,
+      "teamCount": 51,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.55,
-        "pctBtts": 51.6,
-        "pctOver25": 47,
+        "avgGoals": 2.56,
+        "pctBtts": 51.7,
+        "pctOver25": 46.9,
         "pctHomeWin": 42.7,
-        "pctDraw": 27.2,
-        "pctAwayWin": 30
+        "pctDraw": 27,
+        "pctAwayWin": 30.4
       },
       "seasons": [
         "1718",
-        "1819",
-        "1920",
         "2021",
         "2122",
         "2223",
@@ -502,22 +482,21 @@
       "country": "Portugal",
       "leagueName": "Primeira Liga",
       "tier": "principal",
-      "matchCount": 2844,
+      "matchCount": 2538,
       "teamCount": 30,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.62,
-        "pctBtts": 48.5,
-        "pctOver25": 49.3,
-        "pctHomeWin": 44,
-        "pctDraw": 23.8,
-        "pctAwayWin": 32.2
+        "avgGoals": 2.61,
+        "pctBtts": 48.6,
+        "pctOver25": 49.4,
+        "pctHomeWin": 43.7,
+        "pctDraw": 24.2,
+        "pctAwayWin": 32.1
       },
       "seasons": [
         "1718",
-        "1819",
         "1920",
         "2021",
         "2122",
