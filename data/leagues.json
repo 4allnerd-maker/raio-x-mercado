@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-15T13:47:18.042Z",
+  "updatedAt": "2026-11-16T15:18:48.082Z",
   "leagues": [
     {
       "code": "D1",
@@ -161,7 +161,7 @@
       "country": "Espanha",
       "leagueName": "Segunda División",
       "tier": "principal",
-      "matchCount": 4298,
+      "matchCount": 4308,
       "teamCount": 54,
       "hasHT": true,
       "hasCorners": true,
@@ -172,7 +172,7 @@
         "pctOver25": 41,
         "pctHomeWin": 44.8,
         "pctDraw": 29.6,
-        "pctAwayWin": 25.7
+        "pctAwayWin": 25.6
       },
       "seasons": [
         "1718",
@@ -378,15 +378,15 @@
       "country": "Inglaterra",
       "leagueName": "League One",
       "tier": "principal",
-      "matchCount": 4974,
+      "matchCount": 4979,
       "teamCount": 60,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.61,
+        "avgGoals": 2.62,
         "pctBtts": 51.5,
-        "pctOver25": 49.2,
+        "pctOver25": 49.3,
         "pctHomeWin": 43.3,
         "pctDraw": 25.7,
         "pctAwayWin": 31
@@ -409,7 +409,7 @@
       "country": "Inglaterra",
       "leagueName": "League Two",
       "tier": "principal",
-      "matchCount": 5020,
+      "matchCount": 5030,
       "teamCount": 54,
       "hasHT": true,
       "hasCorners": true,
@@ -418,7 +418,7 @@
         "avgGoals": 2.55,
         "pctBtts": 51.6,
         "pctOver25": 47,
-        "pctHomeWin": 42.7,
+        "pctHomeWin": 42.8,
         "pctDraw": 27.2,
         "pctAwayWin": 30
       },
@@ -626,16 +626,16 @@
       "country": "Brasil",
       "leagueName": "Série A",
       "tier": "extra",
-      "matchCount": 3759,
+      "matchCount": 3761,
       "teamCount": 33,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.41,
-        "pctBtts": 49.2,
-        "pctOver25": 43.7,
-        "pctHomeWin": 47.4,
+        "pctBtts": 49.1,
+        "pctOver25": 43.6,
+        "pctHomeWin": 47.3,
         "pctDraw": 27.4,
         "pctAwayWin": 25.3
       },
@@ -843,7 +843,7 @@
       "country": "México",
       "leagueName": "Liga MX",
       "tier": "extra",
-      "matchCount": 3128,
+      "matchCount": 3129,
       "teamCount": 22,
       "hasHT": false,
       "hasCorners": false,
@@ -852,7 +852,7 @@
         "avgGoals": 2.71,
         "pctBtts": 55.1,
         "pctOver25": 51.3,
-        "pctHomeWin": 44.9,
+        "pctHomeWin": 44.8,
         "pctDraw": 26.3,
         "pctAwayWin": 28.9
       },
