@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-16T15:18:48.082Z",
+  "updatedAt": "2026-11-17T16:00:32.835Z",
   "leagues": [
     {
       "code": "D1",
@@ -161,7 +161,7 @@
       "country": "Espanha",
       "leagueName": "Segunda División",
       "tier": "principal",
-      "matchCount": 4308,
+      "matchCount": 4309,
       "teamCount": 54,
       "hasHT": true,
       "hasCorners": true,
@@ -192,23 +192,22 @@
       "country": "França",
       "leagueName": "Ligue 1",
       "tier": "principal",
-      "matchCount": 3187,
+      "matchCount": 2908,
       "teamCount": 31,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.75,
-        "pctBtts": 53.3,
-        "pctOver25": 52.3,
-        "pctHomeWin": 43.4,
+        "avgGoals": 2.77,
+        "pctBtts": 53.8,
+        "pctOver25": 52.8,
+        "pctHomeWin": 43,
         "pctDraw": 25.2,
-        "pctAwayWin": 31.4
+        "pctAwayWin": 31.8
       },
       "seasons": [
         "1718",
         "1819",
-        "1920",
         "2021",
         "2122",
         "2223",
@@ -347,15 +346,15 @@
       "country": "Inglaterra",
       "leagueName": "Championship",
       "tier": "principal",
-      "matchCount": 5148,
-      "teamCount": 48,
+      "matchCount": 4968,
+      "teamCount": 46,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
-        "avgGoals": 2.55,
-        "pctBtts": 51.4,
-        "pctOver25": 47.8,
+        "avgGoals": 2.54,
+        "pctBtts": 51,
+        "pctOver25": 47.3,
         "pctHomeWin": 43,
         "pctDraw": 26.5,
         "pctAwayWin": 30.5
@@ -369,8 +368,7 @@
         "2223",
         "2324",
         "2425",
-        "2526",
-        "2627"
+        "2526"
       ]
     },
     {
