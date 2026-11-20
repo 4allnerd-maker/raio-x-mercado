@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-19T15:33:22.165Z",
+  "updatedAt": "2026-11-20T15:08:46.234Z",
   "leagues": [
     {
       "code": "D1",
@@ -626,7 +626,7 @@
       "country": "Brasil",
       "leagueName": "Série A",
       "tier": "extra",
-      "matchCount": 3761,
+      "matchCount": 3770,
       "teamCount": 33,
       "hasHT": false,
       "hasCorners": false,
@@ -634,9 +634,9 @@
       "agg": {
         "avgGoals": 2.41,
         "pctBtts": 49.1,
-        "pctOver25": 43.6,
-        "pctHomeWin": 47.3,
-        "pctDraw": 27.4,
+        "pctOver25": 43.7,
+        "pctHomeWin": 47.4,
+        "pctDraw": 27.3,
         "pctAwayWin": 25.3
       },
       "seasons": [
