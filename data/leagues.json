@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-25T17:01:42.055Z",
+  "updatedAt": "2026-11-26T16:41:12.007Z",
   "leagues": [
     {
       "code": "D1",
@@ -99,7 +99,7 @@
       "country": "Escócia",
       "leagueName": "Premiership",
       "tier": "principal",
-      "matchCount": 2084,
+      "matchCount": 2086,
       "teamCount": 16,
       "hasHT": true,
       "hasCorners": true,
@@ -347,7 +347,7 @@
       "country": "Inglaterra",
       "leagueName": "Championship",
       "tier": "principal",
-      "matchCount": 5160,
+      "matchCount": 5172,
       "teamCount": 48,
       "hasHT": true,
       "hasCorners": true,
@@ -378,7 +378,7 @@
       "country": "Inglaterra",
       "leagueName": "League One",
       "tier": "principal",
-      "matchCount": 4991,
+      "matchCount": 4995,
       "teamCount": 60,
       "hasHT": true,
       "hasCorners": true,
@@ -387,8 +387,8 @@
         "avgGoals": 2.62,
         "pctBtts": 51.5,
         "pctOver25": 49.3,
-        "pctHomeWin": 43.3,
-        "pctDraw": 25.6,
+        "pctHomeWin": 43.2,
+        "pctDraw": 25.7,
         "pctAwayWin": 31.1
       },
       "seasons": [
@@ -409,7 +409,7 @@
       "country": "Inglaterra",
       "leagueName": "League Two",
       "tier": "principal",
-      "matchCount": 5042,
+      "matchCount": 5044,
       "teamCount": 54,
       "hasHT": true,
       "hasCorners": true,
@@ -471,17 +471,17 @@
       "country": "Itália",
       "leagueName": "Serie B",
       "tier": "principal",
-      "matchCount": 3584,
+      "matchCount": 3594,
       "teamCount": 53,
       "hasHT": true,
       "hasCorners": true,
       "hasCards": true,
       "agg": {
         "avgGoals": 2.5,
-        "pctBtts": 53.7,
-        "pctOver25": 45.3,
+        "pctBtts": 53.8,
+        "pctOver25": 45.4,
         "pctHomeWin": 41.1,
-        "pctDraw": 32.1,
+        "pctDraw": 32,
         "pctAwayWin": 26.9
       },
       "seasons": [
