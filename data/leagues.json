@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-26T16:41:12.007Z",
+  "updatedAt": "2026-11-27T16:28:01.923Z",
   "leagues": [
     {
       "code": "D1",
@@ -564,7 +564,7 @@
       "country": "Argentina",
       "leagueName": "Liga Profesional",
       "tier": "extra",
-      "matchCount": 4368,
+      "matchCount": 4369,
       "teamCount": 40,
       "hasHT": false,
       "hasCorners": false,
@@ -572,7 +572,7 @@
       "agg": {
         "avgGoals": 2.2,
         "pctBtts": 44.4,
-        "pctOver25": 38,
+        "pctOver25": 37.9,
         "pctHomeWin": 42.5,
         "pctDraw": 30.6,
         "pctAwayWin": 26.9
@@ -626,16 +626,16 @@
       "country": "Brasil",
       "leagueName": "Série A",
       "tier": "extra",
-      "matchCount": 3779,
+      "matchCount": 3782,
       "teamCount": 33,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.41,
-        "pctBtts": 49.1,
-        "pctOver25": 43.6,
-        "pctHomeWin": 47.3,
+        "pctBtts": 49.2,
+        "pctOver25": 43.7,
+        "pctHomeWin": 47.4,
         "pctDraw": 27.3,
         "pctAwayWin": 25.3
       },
@@ -719,7 +719,7 @@
       "country": "EUA",
       "leagueName": "MLS",
       "tier": "extra",
-      "matchCount": 4607,
+      "matchCount": 4608,
       "teamCount": 30,
       "hasHT": false,
       "hasCorners": false,
@@ -812,21 +812,20 @@
       "country": "Japão",
       "leagueName": "J1 League",
       "tier": "extra",
-      "matchCount": 3137,
+      "matchCount": 2838,
       "teamCount": 34,
       "hasHT": false,
       "hasCorners": false,
       "hasCards": false,
       "agg": {
         "avgGoals": 2.59,
-        "pctBtts": 50.7,
-        "pctOver25": 47.9,
-        "pctHomeWin": 41.2,
-        "pctDraw": 25.3,
-        "pctAwayWin": 33.5
+        "pctBtts": 50.8,
+        "pctOver25": 48,
+        "pctHomeWin": 41.1,
+        "pctDraw": 25.5,
+        "pctAwayWin": 33.4
       },
       "seasons": [
-        "2017",
         "2018",
         "2019",
         "2020",
@@ -835,6 +834,7 @@
         "2023",
         "2024",
         "2025",
+        "2026",
         "2026/2027"
       ]
     },
@@ -843,7 +843,7 @@
       "country": "México",
       "leagueName": "Liga MX",
       "tier": "extra",
-      "matchCount": 3138,
+      "matchCount": 3142,
       "teamCount": 22,
       "hasHT": false,
       "hasCorners": false,
